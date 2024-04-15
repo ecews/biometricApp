@@ -1,0 +1,17 @@
+application:
+  library-path: C:\Neurotec_Biometric_13_0_SDK_2023-11-07\Bin\Biometric
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/gh_oron_issue
+    username: postgres
+    password: ecews@2023
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  application:
+    name: biometricApp
+server:
+  port: 7071
