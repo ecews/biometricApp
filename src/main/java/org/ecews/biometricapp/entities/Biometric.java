@@ -1,7 +1,6 @@
 package org.ecews.biometricapp.entities;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.json.bind.annotation.JsonbProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
