@@ -35,14 +35,24 @@ public class NService {
 
     public void recaptureOneAndBaseline(String deduplicationType) {
         // Getting all baseline prints
-        var baselinePrints = biometricService.getFingerprints(0L, deduplicationType);
+        var baselinePrints = biometricService.getFingerprints(0L);
         // Getting all recapture one fingerprints
-        var recaptureOnePrints = biometricService.getNoMatchFingerprints(1L, deduplicationType);
+        var fingersRecapture1 = biometricService.getFingerprints(1L);
+        // Getting all recapture one fingerprints
+        var recaptureOneNMPrints = biometricService.getNoMatchFingerprints(1L, deduplicationType);
+        // Getting all client with recapture NDR status as MATCH
+        var recaptureOneMPrints = biometricService.getFingerprintsByNDRStatus(0L, "MATCH");
+
+        // Add recaptureOneNMPrints to recaptureOneMPrints
+        recaptureOneMPrints.addAll(recaptureOneNMPrints);
+        // Removing all matched and no match recapture fingers from fingersRecapture1
+        var removedMatch = biometricService.removeDuplicatesBiometrics(fingersRecapture1, recaptureOneMPrints);
+        // Now add the removedMatch to recaptureOne
+        recaptureOneNMPrints.addAll(removedMatch);
         // Grouping baselinePrints and recaptureOnePrints using personUuid
-        var biometrics = biometricService.groupFingerprints(baselinePrints, recaptureOnePrints);
+        var biometrics = biometricService.groupFingerprints(baselinePrints, recaptureOneNMPrints);
         // Filtering keys in biometrics that do not have a recapture one print
-        var filteredBiometrics = biometricService.filterClientWithoutBiometric(biometrics, recaptureOnePrints);
-        log.info("Filter Biometric Size ******* {}", filteredBiometrics.size());
+        var filteredBiometrics = biometricService.filterClientWithoutBiometric(biometrics, recaptureOneNMPrints);
 
         for (String personUuid : filteredBiometrics.keySet()) {
             List<Biometric> prints = filteredBiometrics.get(personUuid);
@@ -54,14 +64,83 @@ public class NService {
         }
 
     }
-
     public void recaptureOneDuplicateCheck(String deduplicationType){
         var recaptureOnePrints = biometricService.getNoMatchFingerprints(1L, deduplicationType);
         var groupedBiometrics = recaptureOnePrints.stream()
                 .collect(Collectors.groupingBy(Biometric::getPersonUuid));
-
-        doIdentification(recaptureOnePrints, groupedBiometrics, deduplicationType);
+        var baselinePrints = biometricService.getFingerprints(0L);
+        // Filtering baseline prints for all clients that are NO_MATCH recapture one
+        var fingers = biometricService.removeDuplicatesBiometrics(baselinePrints, recaptureOnePrints);
+        fingers.addAll(recaptureOnePrints);
+        log.info("Fingers count ************** {}", fingers.size());
+        doIdentification(fingers, groupedBiometrics, deduplicationType);
     }
+
+    public void recaptureTwoAndRecaptureOne(String deduplicationType) {
+        // Getting all recapture two prints
+        var recaptureTwoPrints = biometricService.getFingerprints(2L, deduplicationType);
+        // Getting all recapture one fingerprints
+        var recaptureOnePrints = biometricService.getFingerprints(1L);
+        // Grouping recaptureTwoPrints and recaptureOnePrints using personUuid
+        var biometrics = biometricService.groupFingerprints(recaptureOnePrints, recaptureTwoPrints);
+        // Filtering keys in biometrics that do not have a recapture two print and only keeping client with both two and one
+        var filteredBiometrics = biometricService.filterClientWithoutBiometric(biometrics, recaptureOnePrints);
+
+        for (String personUuid : filteredBiometrics.keySet()) {
+            List<Biometric> prints = filteredBiometrics.get(personUuid);
+            List<Biometric> patientRecaptureTwoPrints = biometricService.filterBiometricByRecapture(prints, 2);
+            List<Biometric> patientRecaptureOnePrints = biometricService.filterBiometricByRecapture(prints, 1);
+            // Do identification
+            doIdentification(patientRecaptureTwoPrints, patientRecaptureOnePrints, personUuid, deduplicationType);
+        }
+
+    }
+
+    public void recaptureTwoDuplicateCheck(String deduplicationType){
+        var recaptureTwoPrints = biometricService.getFingerprints(2L, deduplicationType);
+        var groupedBiometrics = recaptureTwoPrints.stream()
+                .collect(Collectors.groupingBy(Biometric::getPersonUuid));
+        var baselinePrints = biometricService.getFingerprints(0L);
+        // Filtering all recapture two prints from baseline prints
+        var fingers = biometricService.removeDuplicatesBiometrics(baselinePrints, recaptureTwoPrints);
+        fingers.addAll(recaptureTwoPrints);
+
+        doIdentification(fingers, groupedBiometrics, deduplicationType);
+    }
+    /*This method help you compare recaptu
+    * */
+    public void recaptureThreeAndRecaptureTwo(String deduplicationType) {
+        // Getting all recapture two prints
+        var recaptureTwoPrints = biometricService.getFingerprints(2L);
+        // Getting all recapture one fingerprints
+        var recaptureThreePrints = biometricService.getFingerprints(3L, deduplicationType);
+        // Grouping recaptureTwoPrints and recaptureOnePrints using personUuid
+        var biometrics = biometricService.groupFingerprints(recaptureTwoPrints, recaptureThreePrints);
+        // Filtering keys in biometrics that do not have a recapture two print and only keeping client with both two and one
+        var filteredBiometrics = biometricService.filterClientWithoutBiometric(biometrics, recaptureThreePrints);
+
+        for (String personUuid : filteredBiometrics.keySet()) {
+            List<Biometric> prints = filteredBiometrics.get(personUuid);
+            List<Biometric> patientRecaptureTwoPrints = biometricService.filterBiometricByRecapture(prints, 2);
+            List<Biometric> patientRecaptureThreePrints = biometricService.filterBiometricByRecapture(prints, 3);
+            // Do identification
+            doIdentification(patientRecaptureThreePrints, patientRecaptureTwoPrints, personUuid, deduplicationType);
+        }
+
+    }
+
+    public void recaptureThreeDuplicateCheck(String deduplicationType){
+        var recaptureThreePrints = biometricService.getFingerprints(3L, deduplicationType);
+        var groupedBiometrics = recaptureThreePrints.stream()
+                .collect(Collectors.groupingBy(Biometric::getPersonUuid));
+        var baselinePrints = biometricService.getFingerprints(0L);
+        // Filtering baseline prints for all clients that are NO_MATCH recapture one
+        var fingers = biometricService.removeDuplicatesBiometrics(baselinePrints, recaptureThreePrints);
+        fingers.addAll(recaptureThreePrints);
+        log.info("Fingers Count ********* {}", fingers.size());
+        doIdentification(fingers, groupedBiometrics, deduplicationType);
+    }
+
     private Map<String, List<NSubject>> createSubjects (Map<String, List<Biometric>> prints) {
         Map<String, List<NSubject>> subjects = new HashMap<>();
 
@@ -113,7 +192,9 @@ public class NService {
 
         var task = client.createTask(EnumSet.of(NBiometricOperation.ENROLL), null);
         performNTask(client, subjects, task);
+        log.info("SIZE OF THE MAP ****** {}", identifierSubjects.size());
 
+        // Patient level loop
         for (Map.Entry<String, List<NSubject>> entry : identifierSubjects.entrySet()) {
             var personUuid = entry.getKey();
             var subs = entry.getValue();
@@ -126,6 +207,7 @@ public class NService {
             identificationResponse.setIdentifierCount(subs.size());
 
             HandledResponse handleDResponse = new HandledResponse();
+            // Finger level loop
             subs.stream().parallel().forEach(subject -> {
                 NBiometricStatus s = client.identify(subject);
                 HandledResponse r = handleIdentificationResponse(s, handleDResponse, subject, subjects, deduplicationType);
@@ -211,10 +293,15 @@ public class NService {
         var id = finger.getProperty("id").toString();
         var personUUid = finger.getProperty("personUuid").toString();
         if (s.equals(NBiometricStatus.OK)) {
-
+            handleDResponse.setMatchCount(handleDResponse.getMatchCount() + 1);
             NSubject.MatchingResultCollection nMatchingResults = finger.getMatchingResults();
+
+            List<MatchedPair> matchedPairs = handleDResponse.getMatchedPairs();
+
             for(int i = 0; i < finger.getMatchingResults().size(); i++) {
-                List<MatchedPair> matchedPairs = handleDResponse.getMatchedPairs();
+                if (matchedPairs == null) {
+                    matchedPairs = new ArrayList<>();
+                }
                 MatchedPair matchedPair = new MatchedPair();
                 matchedPair.setEnrolledFingerId(id);
                 matchedPair.setEnrolledPatientFingerType(templateType);
@@ -232,21 +319,10 @@ public class NService {
                     matchedPair.setMatchedPatientId(matchPersonUUid);
                 });
                 matchedPair.setScore(finger.getMatchingResults().get(i).getScore());
-
-                if (matchedPairs == null) {
-                    // If matchedPairs is null, create a new ArrayList to hold the matched pairs
-                    matchedPairs = new ArrayList<>();
-                    if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK)) {
-                        if (!personUUid.equals(matchedPair.getMatchedPatientId())) {
-                            matchedPairs.add(matchedPair);
-                        }
-                    } else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE )) {
-                        matchedPairs.add(matchedPair);
-                        handleDResponse.setMatchCount(handleDResponse.getMatchCount() + 1);
-                    } else {
-                        log.info("This is not a valid deduplication type ****** ");
-                    }
-
+                matchedPairs.add(matchedPair);
+                if(matchedPair.getMatchedFingerId().equals(matchedPair.getEnrolledFingerId())){
+                    matchedPairs.remove(matchedPair);
+                    handleDResponse.setMatchCount(handleDResponse.getMatchCount() - 1);
                 }
                 handleDResponse.setMatchedPairs(matchedPairs);
             }
