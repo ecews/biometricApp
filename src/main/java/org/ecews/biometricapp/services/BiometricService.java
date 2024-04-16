@@ -28,6 +28,14 @@ public class BiometricService {
         return biometricRepository.getFingerprints(recapture, deduplicationType);
     }
 
+    public List<Biometric> getFingerprints(Long recapture){
+        return biometricRepository.getFingerprints(recapture);
+    }
+
+    public List<Biometric> getFingerprintsByNDRStatus(Long recapture, String status){
+        return biometricRepository.getFingerprintsByNDRStatus(recapture, status);
+    }
+
     public List<Biometric> filterBiometricByRecapture (List<Biometric> biometrics, Integer recapture) {
         return biometrics.stream()
                 .filter(biometric -> biometric.getRecapture() != null && biometric.getRecapture().equals(recapture))
@@ -55,5 +63,15 @@ public class BiometricService {
         groupedBiometrics.keySet().removeIf(personUuid -> !recapturePersonUuids.contains(personUuid));
 
         return groupedBiometrics;
+    }
+
+    public List<Biometric> removeDuplicatesBiometrics(List<Biometric> biometric1, List<Biometric> biometric2) {
+        List<String> personUuidsToRemove = biometric2.stream()
+                .map(Biometric::getPersonUuid)
+                .toList();
+
+        return biometric1.stream()
+                .filter(biometric -> !personUuidsToRemove.contains(biometric.getPersonUuid()))
+                .collect(Collectors.toList());
     }
 }

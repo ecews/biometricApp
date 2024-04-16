@@ -30,9 +30,6 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
-          <li class="nav-item">
-              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
-          </li>
       </ul>
       <div>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
@@ -109,10 +106,7 @@
            var reportLevel = document.getElementById('reportLevel').value;
            var reportType = document.getElementById('reportType').value;
 
-           let filename = '';
-
-           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date() + '_SUMMARY.csv'
-           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date() + '_DETAIL.csv'
+           const filename = reportType + '_' + Date() + (reportLevel === 'REPORT_LEVEL_SUMMARY') ? '_SUMMARY' : '_DETAIL' + '.csv'
 
            // Send AJAX request to the backend
            var xhr = new XMLHttpRequest();

@@ -21,17 +21,14 @@
         <li class="nav-item">
           <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
         </li>
-         <li class="nav-item">
-          <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
-        </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+          </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
           </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
           </li>
       </ul>
       <div>
@@ -41,14 +38,13 @@
   </div>
 </nav>
 
-   <div class="container text-center mt-5 w-50">
-
-       <h1>CLIENT DEDUPLICATION SERVICES</h1>
-       <h6> Please kind select the type of deduplication you want to perform from the dropdown below
-       </h6>
+   <div class="container text-center my-5">
+   		<h1>RECAPTURE STATUS</h1>
+   		<h6> This will enable you upload client NDR recapture Status
+   		</h6>
 
        <div id="inProcess" class="alert alert-info" role="alert" style="display: none;">
-           <label>Deduplication in process ... </label>
+           <label>File upload in process ... </label>
        </div>
 
        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -62,22 +58,15 @@
        </div>
 
        <div class="row row text-center mt-5 w-50 m-auto">
-           <form method="get" th:action="@{/run-deduplication}" class="mt-5 row align-items-center">
+           <form method="post" th:action="@{/upload-recapture-status}" enctype="multipart/form-data" class="align-items-center">
                <div class="mb-3">
                    <div class="col">
-                       <select name="deduplicationType" class="form-select form-select-lg mb-3" aria-label="Large select example">
-                           <option selected>Choose Deduplication Type</option>
-                           <option value="DUPLICATE_CHECK">Duplicate Check</option>
-                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
-                           <option value="RECAPTURE_ONE_AND_BASELINE">Recapture One and Baseline</option>
-                           <option value="RECAPTURE_TWO_AND_ONE">Recapture Two and One</option>
-                           <option value="RECAPTURE_THREE_AND_TWO">Recapture Three and Two</option>
-                       </select>
+                       <input name="file" class="form-control form-control-lg" id="formFileLg" type="file">
                    </div>
                </div>
                <div class="mb-3">
                    <div class="col">
-                       <button th:onclick="showWaitMessage()" type="submit" class="btn btn-primary">Run Deduplication</button>
+                       <button th:onclick="showWaitMessage()" type="submit" class="btn btn-primary">Upload Status</button>
                    </div>
                </div>
            </form>
@@ -90,7 +79,6 @@
            document.getElementById("inProcess").style.display = "block";
        }
    </script>
-
    <script src="/js/bootstrap.bundle.min.js" ></script>
     
   </body>
