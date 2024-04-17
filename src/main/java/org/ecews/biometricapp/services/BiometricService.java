@@ -38,7 +38,13 @@ public class BiometricService {
 
     public List<Biometric> filterBiometricByRecapture (List<Biometric> biometrics, Integer recapture) {
         return biometrics.stream()
-                .filter(biometric -> biometric.getRecapture() != null && biometric.getRecapture().equals(recapture))
+                .filter(biometric -> biometric.getRecapture() != null && biometric.getRecapture() <= recapture)
+                .collect(Collectors.toList());
+    }
+
+    public List<Biometric> filterAllBiometricByRecapture (List<Biometric> biometrics, Integer recapture) {
+        return biometrics.stream()
+                .filter(biometric -> biometric.getRecapture() != null && biometric.getRecapture() <= recapture)
                 .collect(Collectors.toList());
     }
 
@@ -65,7 +71,7 @@ public class BiometricService {
         return groupedBiometrics;
     }
 
-    public List<Biometric> removeDuplicatesBiometrics(List<Biometric> biometric1, List<Biometric> biometric2) {
+    public List<Biometric> removeBiometrics(List<Biometric> biometric1, List<Biometric> biometric2) {
         List<String> personUuidsToRemove = biometric2.stream()
                 .map(Biometric::getPersonUuid)
                 .toList();

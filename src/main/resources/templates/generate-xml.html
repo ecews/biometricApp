@@ -134,6 +134,7 @@
        $(document).ready(function() {
            $("#submitButton").click(function() {
                document.getElementById("inProcess").style.display = "block";
+               $('#submitButton').attr('disabled','disabled');
                const facilityId = $("#facilities").val(); // Replace with the actual facilityId
                const recaptureType = $("#recapture").val();// Replace with the actual recaptureType
 
@@ -147,6 +148,7 @@
                        } else {
                            document.getElementById("inProcess").style.display = "none";
                        }
+                       $('#submitButton').attr('enabled','enabled');
                    },
                    error: function(xhr, status, error) {
                        console.error(xhr.responseText);

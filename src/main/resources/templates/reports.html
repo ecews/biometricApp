@@ -115,6 +115,7 @@
        });
 
        document.getElementById('submitButton').addEventListener('click', function() {
+           document.getElementById("submitButton").disabled = true;
            document.getElementById("inProcess").style.display = "block";
            const reportLevel = document.getElementById('reportLevel').value;
            const reportType = document.getElementById('reportType').value;
@@ -129,6 +130,7 @@
            xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
+               document.getElementById("submitButton").enabled = true;
                if (xhr.status === 200) {
                    document.getElementById("inProcess").style.display = "none";
                    // Create a blob URL from the response

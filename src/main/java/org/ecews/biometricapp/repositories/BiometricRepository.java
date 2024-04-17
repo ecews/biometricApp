@@ -41,7 +41,7 @@ public interface BiometricRepository extends JpaRepository<Biometric, String> {
     List<Biometric> getFingerprints(Long recapture, String deduplicationType);
 
     @Query(value = """
-        select * from biometric where archived = 0 and recapture = ?1
+        select * from biometric where archived = 0 and recapture <= ?1
 """, nativeQuery = true)
     List<Biometric> getFingerprints(Long recapture);
 
