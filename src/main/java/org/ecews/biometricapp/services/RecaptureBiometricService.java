@@ -90,7 +90,7 @@ public class RecaptureBiometricService {
 								String fileName = generateFileName(d, identifier);
 								File file = new File(pathname + fileName);
 								jaxbMarshaller.marshal(container, file);
-								saveTheXmlFile(identifier, fileName);
+								saveTheXmlFile(identifier, fileName,recaptureType);
 								count.getAndIncrement();
 								demographics.add(d);
 							}
@@ -104,17 +104,17 @@ public class RecaptureBiometricService {
 				});
 		log.info("Total number of files generated {}", demographics.size());
 		if (!demographics.isEmpty()) {
-			zipAndSaveTheFilesforDownload(facilityId, pathname, count, demographics);
+			zipAndSaveTheFilesforDownload(facilityId, pathname, count, recaptureType, demographics);
 		}
 		
 		return true;
 	}
 	
 	
-	private void saveTheXmlFile(String identifier, String fileName) {
+	private void saveTheXmlFile(String identifier, String fileName, Integer recaptureType) {
 		NdrMessageLog ndrMessageLog = new NdrMessageLog();
 		ndrMessageLog.setIdentifier(identifier);
-		ndrMessageLog.setFile(fileName);
+		ndrMessageLog.setFile(fileName+"_"+recaptureType);
 		ndrMessageLog.setLastUpdated(LocalDateTime.now());
 		ndrMessageLog.setFileType("recaptured-biometric");
 		ndrMessageLogRepository.save(ndrMessageLog);
@@ -125,9 +125,10 @@ public class RecaptureBiometricService {
 			Long facilityId,
 			String pathname,
 			AtomicInteger count,
+			Integer recaptureType,
 			List<PatientDemographics> demographics) {
 		try {
-		String zipFileName = zipFileWithType(demographics.get(0), pathname, "bio_recapture");
+		String zipFileName = zipFileWithType(demographics.get(0), pathname, "bio_recapture"+"_"+recaptureType);
 		NdrXmlStatus ndrXmlStatus = new NdrXmlStatus();
 		ndrXmlStatus.setFacilityId(facilityId);
 		ndrXmlStatus.setFiles(count.get());
@@ -235,17 +236,14 @@ public class RecaptureBiometricService {
 	public Iterable<NdrXmlStatusDto> getNdrStatus() {
 		Iterable<NdrXmlStatus> ndrXmlStatusList = ndrXmlStatusRepository.getRecaptureFiles();
 		List<NdrXmlStatusDto> ndrXmlStatusDtos = new ArrayList<>();
-		Iterator iterator = ndrXmlStatusList.iterator();
-		while (iterator.hasNext()){
-			NdrXmlStatus ndrXmlStatus = (NdrXmlStatus) iterator.next();
-			NdrXmlStatusDto ndrXmlStatusDto = new NdrXmlStatusDto();
-			//ndrXmlStatusDto.setFacility((organisationUnitService.getOrganizationUnit (ndrXmlStatus.getFacilityId ()).getName ()));
-			ndrXmlStatusDto.setFileName(ndrXmlStatus.getFileName());
-			ndrXmlStatusDto.setFiles(ndrXmlStatus.getFiles());
-			ndrXmlStatusDto.setLastModified(ndrXmlStatus.getLastModified());
-			ndrXmlStatusDto.setId(ndrXmlStatus.getId());
-			ndrXmlStatusDtos.add(ndrXmlStatusDto);
-		}
+        for (NdrXmlStatus ndrXmlStatus : ndrXmlStatusList) {
+            NdrXmlStatusDto ndrXmlStatusDto = new NdrXmlStatusDto();
+            ndrXmlStatusDto.setFileName(ndrXmlStatus.getFileName());
+            ndrXmlStatusDto.setFiles(ndrXmlStatus.getFiles());
+            ndrXmlStatusDto.setLastModified(ndrXmlStatus.getLastModified());
+            ndrXmlStatusDto.setId(ndrXmlStatus.getId());
+            ndrXmlStatusDtos.add(ndrXmlStatusDto);
+        }
 		return ndrXmlStatusDtos;
 	}
 
