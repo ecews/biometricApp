@@ -88,7 +88,7 @@ public class RecaptureBiometricMapper {
         Optional<NdrMessageLog> messageLog =
                 ndrMessageLogRepository.findFirstByIdentifierAndFileType(patientIdentifier, "recaptured-biometric");
         List<RecaptureBiometricDTO> biometricDTOList = new ArrayList<>();
-        if (messageLog.isPresent() && messageLog.get().getFile().contains(String.valueOf(recaptureType))) {
+        if (messageLog.isPresent() && messageLog.get().getFile().contains("xml_"+ recaptureType)) {
             // find the new value;
             LocalDate lastUpdated =
                     messageLog.get().getLastUpdated().toLocalDate();
