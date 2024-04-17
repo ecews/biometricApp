@@ -61,15 +61,14 @@ public class RecaptureBiometricService {
 		cleanupFacility(facilityId, pathname);
 		AtomicInteger count = new AtomicInteger(0);
 		log.info("start generating recapture biometrics patients");
-		List<String> patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType);
-		log.info("About {} patients are identified for generating NDR file", patientsIds.size());
-		if (patientsIds.isEmpty()) {
+		Iterable<String> patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType);
+		log.info("About {} patients are identified for generating NDR file", patientsIds.iterator().hasNext());
+		if (!patientsIds.iterator().hasNext()) {
 			return false;
 		}
 		log.info("fetching patient demographics");
 		List<PatientDemographics> demographics = new ArrayList<>();
-		patientsIds.parallelStream()
-				.forEach(id -> {
+		patientsIds.forEach(id -> {
 					Optional<PatientDemographics> demographicsOptional =
 							ndrXmlStatusRepository.getPatientDemographicsByUUID(id);
 					demographicsOptional.ifPresent(d -> {

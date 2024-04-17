@@ -83,7 +83,7 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
                       and recapture = ?2 
                       and archived = 0
                    """, nativeQuery = true)
-   List<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
+   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
    
    @Query(value = "select person_uuid from hiv_art_pharmacy \n" +
            "where last_modified_date > ?1\n" +
