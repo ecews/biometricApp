@@ -62,7 +62,7 @@ public class BiometricController {
             return "deduplication";
         }
         else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK)) {
-            nService.recaptureTwoDuplicateCheck(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK);
+            nService.recaptureThreeDuplicateCheck(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK);
             model.addAttribute("successMessage", "Done running recapture three duplicate check");
             return "deduplication";
         }

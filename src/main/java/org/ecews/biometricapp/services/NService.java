@@ -211,13 +211,9 @@ public class NService {
             subs.stream().parallel().forEach(subject -> {
                 NBiometricStatus s = client.identify(subject);
                 HandledResponse r = handleIdentificationResponse(s, handleDResponse, subject, subjects, deduplicationType);
-                handleDResponse.setMatchCount(r.getMatchCount());
-                handleDResponse.setNoMatchCount(r.getNoMatchCount());
                 handleDResponse.setMatchedPairs(r.getMatchedPairs());
             });
 
-            identificationResponse.setNoMatchCount(handleDResponse.getNoMatchCount());
-            identificationResponse.setMatchCount(handleDResponse.getMatchCount());
             identificationResponse.setMatchedPairs(handleDResponse.getMatchedPairs());
             Set<String> recapturedIds = subs.stream()
                     .map(NSubject::getId)
@@ -268,12 +264,9 @@ public class NService {
         for (NSubject finger : identifierSubjects) {
             NBiometricStatus s = client.identify(finger);
             HandledResponse r = handleIdentificationResponse(s, handleDResponse, finger, subjects, deduplicationType);
-            handleDResponse.setMatchCount(r.getMatchCount());
-            handleDResponse.setNoMatchCount(r.getNoMatchCount());
             handleDResponse.setMatchedPairs(r.getMatchedPairs());
         }
-        identificationResponse.setNoMatchCount(handleDResponse.getNoMatchCount());
-        identificationResponse.setMatchCount(handleDResponse.getMatchCount());
+
         identificationResponse.setMatchedPairs(handleDResponse.getMatchedPairs());
 
         Set<String> recapturedIds = identifierSubjects.stream()
@@ -293,7 +286,6 @@ public class NService {
         var id = finger.getProperty("id").toString();
         var personUUid = finger.getProperty("personUuid").toString();
         if (s.equals(NBiometricStatus.OK)) {
-            handleDResponse.setMatchCount(handleDResponse.getMatchCount() + 1);
             NSubject.MatchingResultCollection nMatchingResults = finger.getMatchingResults();
 
             List<MatchedPair> matchedPairs = handleDResponse.getMatchedPairs();
@@ -322,13 +314,10 @@ public class NService {
                 matchedPairs.add(matchedPair);
                 if(matchedPair.getMatchedFingerId().equals(matchedPair.getEnrolledFingerId())){
                     matchedPairs.remove(matchedPair);
-                    handleDResponse.setMatchCount(handleDResponse.getMatchCount() - 1);
                 }
                 handleDResponse.setMatchedPairs(matchedPairs);
             }
 
-        } else {
-            handleDResponse.setNoMatchCount(handleDResponse.getNoMatchCount() + 1);
         }
         return handleDResponse;
     }

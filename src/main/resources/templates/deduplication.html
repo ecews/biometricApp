@@ -30,11 +30,21 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
-          <li class="nav-item">
+         <!-- <li class="nav-item">
               <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>-->
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
+              </ul>
           </li>
       </ul>
       <div>
+          <span class="navbar-text text-white">
+              Version: 1.0.0
+          </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
     </div>
@@ -67,11 +77,13 @@
                    <div class="col">
                        <select name="deduplicationType" class="form-select form-select-lg mb-3" aria-label="Large select example">
                            <option selected>Choose Deduplication Type</option>
-                           <option value="DUPLICATE_CHECK">Duplicate Check</option>
-                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
+
                            <option value="RECAPTURE_ONE_AND_BASELINE">Recapture One and Baseline</option>
                            <option value="RECAPTURE_TWO_AND_ONE">Recapture Two and One</option>
                            <option value="RECAPTURE_THREE_AND_TWO">Recapture Three and Two</option>
+                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
+                           <option value="RECAPTURE_TWO_DUPLICATE_CHECK">Recapture Two Duplicate Check</option>
+                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK">Recapture Three Duplicate Check</option>
                        </select>
                    </div>
                </div>
