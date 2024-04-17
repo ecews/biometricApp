@@ -44,17 +44,22 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
             "ORDER BY enrollment_date DESC LIMIT 10;", nativeQuery = true)
     List<RecaptureBiometricDTO> getPatientRecapturedBiometricByPatientUuid(String patientUuid, Integer recapture, LocalDate previousUploadDate);
     
-    @Query(value = "SELECT template_type as templateType, \n" +
-            "enrollment_date as enrollmentDate,\n" +
-            "recapture as count,\n" +
-            "template,\n" +
-            "image_quality as quality,\n" +
-            "hashed as templateTypeHash\n" +
-            "FROM biometric where person_uuid = ?1 \n" +
-            "AND biometric_type = 'FINGERPRINT' and archived = 0\n" +
-            "AND recapture = ?2 \n" +
-            "AND version_iso_20 = true  and iso = true\n" +
-            "ORDER BY enrollment_date DESC LIMIT 10 ", nativeQuery = true)
+    @Query(value =
+            """
+                    select * from (SELECT template_type as templateType,
+                                     enrollment_date as enrollmentDate,
+                                     recapture as count,
+                                     template,
+                                     image_quality as quality,
+                                     hashed as templateTypeHash,
+                                     ROW_NUMBER() OVER (PARTITION BY person_uuid, template_type ORDER BY enrollment_date DESC) AS rank
+                                     FROM biometric where person_uuid = ?1
+                                     AND biometric_type = 'FINGERPRINT' and archived = 0
+                                     AND recapture = ?2
+                                     AND version_iso_20 = true  and iso = true) b where b.rank = 1
+                            AND templateType not in ('Left Thumb', 'Right Thumb', 'Left Index', 'Right Index', 'Left Little', 'Right Little',
+                            						'Left Middle', 'Right Middle', 'Left Ring', 'Right Ring')
+                              """, nativeQuery = true)
     List<RecaptureBiometricDTO> getPatientRecapturedBiometricByPatientUuid(String patientUuid, Integer recapture);
     
    
