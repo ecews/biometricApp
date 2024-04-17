@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.com">
+  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link href="/css/bootstrap.min.css" rel="stylesheet" >
+    <title>Biometric App</title>
+  </head>
+  <body>
+   
+   
+   <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">Biometric App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
+        </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="deduplication">Deduplication</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="reports">Reports</a>
+          </li>
+      </ul>
+      <div>
+      		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
+      </div>
+    </div>
+  </div>
+</nav>
+
+   <div class="container text-center my-5">
+   		<h1>REPORTS GENERATOR</h1>
+   		<h6> Please kindly select report leve and report type to enable generate a report
+   		</h6>
+
+       <div id="inProcess" class="alert alert-info alert-dismissible fade show " role="alert" style="display: none;">
+           <label>Generating report ... </label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div id="reportSuccess" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Done generating report</label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+           <label th:text="${errorMessage}"></label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div class="row row text-center mt-5 w-50 m-auto">
+           <form id="reportForm">
+               <div class="mb-3">
+                   <div class="col">
+                       <select id="reportLevel"  name="reportLevel" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                           <option selected>Select Report Level</option>
+                           <option value="REPORT_LEVEL_SUMMARY">Summary</option>
+                           <option value="REPORT_LEVEL_DETAIL">Detailed</option>
+                       </select>
+                   </div>
+               </div>
+
+               <div class="mb-3">
+                   <div class="col">
+                       <select id="reportType"  name="reportType" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                           <option selected>Select Report Type</option>
+                           <option value="RECAPTURE_ONE_AND_BASELINE_REPORT">Recapture One and Baseline Report</option>
+                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK_REPORT">Recapture One Duplicate Check Report</option>
+
+                           <option value="RECAPTURE_TWO_AND_ONE_REPORT">Recapture Two and One Report</option>
+                           <option value="RECAPTURE_TWO_DUPLICATE_CHECK_REPORT">Recapture Two Duplicate Check Report</option>
+
+                           <option value="RECAPTURE_THREE_AND_TWO_REPORT">Recapture Three and Two Report</option>
+                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK_REPORT">Recapture Three Duplicate Check Report</option>
+                       </select>
+                   </div>
+               </div>
+
+               <div class="mb-3">
+                   <div class="col">
+                       <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate Report</button>
+                   </div>
+               </div>
+           </form>
+       </div>
+   </div>
+
+   <script type="text/javascript">
+       document.getElementById('reportForm').addEventListener('submit', function() {
+           // Show download message
+           document.getElementById("inProcess").style.display = "block";
+       });
+
+       document.getElementById('submitButton').addEventListener('click', function() {
+           document.getElementById("inProcess").style.display = "block";
+           var reportLevel = document.getElementById('reportLevel').value;
+           var reportType = document.getElementById('reportType').value;
+
+           const filename = reportType + '_' + Date() + (reportLevel === 'REPORT_LEVEL_SUMMARY') ? '_SUMMARY' : '_DETAIL' + '.csv'
+
+           // Send AJAX request to the backend
+           var xhr = new XMLHttpRequest();
+           xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
+           xhr.responseType = 'blob'; // Set response type to blob
+           xhr.onload = function() {
+               if (xhr.status === 200) {
+                   document.getElementById("inProcess").style.display = "none";
+                   // Create a blob URL from the response
+                   var blob = new Blob([xhr.response], { type: 'application/octet-stream' });
+                   var url = URL.createObjectURL(blob);
+                   // Create a link element and trigger the download
+                   var a = document.createElement('a');
+                   a.href = url;
+                   a.download = filename; // Set desired file name
+                   document.body.appendChild(a);
+                   a.click();
+                   document.body.removeChild(a);
+                   document.getElementById("reportSuccess").style.display = "block";
+                   URL.revokeObjectURL(url);
+               } else {
+                   // Handle error
+                   console.error('Error downloading file:', xhr.statusText);
+               }
+           };
+           xhr.onerror = function() {
+               // Handle network error
+               console.error('Network error');
+           };
+           xhr.send();
+       });
+
+       function validateForm() {
+           var reportLevel = document.getElementById("reportLevel").value;
+           var reportType = document.getElementById("reportType").value;
+
+           if (reportLevel && reportType) {
+               return true;
+           } else {
+               alert("Please select both Report Level and Report Type.");
+               return false;
+           }
+       }
+
+       document.getElementById("reportLevel").addEventListener("change", toggleSubmitButton);
+       document.getElementById("reportType").addEventListener("change", toggleSubmitButton);
+
+       function toggleSubmitButton() {
+           var reportLevel = document.getElementById("reportLevel").value;
+           var reportType = document.getElementById("reportType").value;
+           var submitButton = document.getElementById("submitButton");
+
+           if ((reportLevel !== 'Select Report Level' && reportLevel) && (reportType !== 'Select Report Type' && reportType)) {
+               submitButton.disabled = false;
+           } else {
+               submitButton.disabled = true;
+           }
+       }
+   </script>
+   <script src="/js/bootstrap.bundle.min.js" ></script>
+  </body>
+</html>

@@ -31,16 +31,16 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
-          <!--<li class="nav-item dropdown">
-              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Dropdown</a>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
               <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Action</a></li>
-                  <li><a class="dropdown-item" href="#">Another action</a></li>
-                  <li><a class="dropdown-item" href="#">Something else here</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="#">Separated link</a></li>
+                  <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
               </ul>
-          </li>-->
+          </li>
       </ul>
       <div>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
@@ -54,6 +54,14 @@
    		<h6 class="red">This application will help you run fingerprint deduplication and as well
             enable you upload your client NDR recapture status
    		</h6>
+
+       <div class="row row text-center mt-5 w-50 m-auto">
+           <div class="mb-3">
+               <div class="col">
+                   <button th:onclick="showWaitMessage()" type="submit" class="btn btn-primary">Identify Client</button>
+               </div>
+           </div>
+       </div>
    </div>
    
    

@@ -30,6 +30,9 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>
       </ul>
       <div>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
@@ -48,8 +51,8 @@
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
-       <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-           <label th:text="${successMessage}"></label>
+       <div id="reportSuccess" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Done generating report</label>
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
@@ -59,7 +62,7 @@
        </div>
 
        <div class="row row text-center mt-5 w-50 m-auto">
-           <form method="get" th:action="@{/generate-reports}" target="_blank" onsubmit="return validateForm()">
+           <form id="reportForm">
                <div class="mb-3">
                    <div class="col">
                        <select id="reportLevel"  name="reportLevel" class="form-select form-select-lg mb-3" aria-label="Large select example">
@@ -76,13 +79,19 @@
                            <option selected>Select Report Type</option>
                            <option value="RECAPTURE_ONE_AND_BASELINE_REPORT">Recapture One and Baseline Report</option>
                            <option value="RECAPTURE_ONE_DUPLICATE_CHECK_REPORT">Recapture One Duplicate Check Report</option>
+
+                           <option value="RECAPTURE_TWO_AND_ONE_REPORT">Recapture Two and One Report</option>
+                           <option value="RECAPTURE_TWO_DUPLICATE_CHECK_REPORT">Recapture Two Duplicate Check Report</option>
+
+                           <option value="RECAPTURE_THREE_AND_TWO_REPORT">Recapture Three and Two Report</option>
+                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK_REPORT">Recapture Three Duplicate Check Report</option>
                        </select>
                    </div>
                </div>
 
                <div class="mb-3">
                    <div class="col">
-                       <button id = "submitButton" th:onclick="showWaitMessage()" type="submit" class="btn btn-primary" disabled>Generate Report</button>
+                       <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate Report</button>
                    </div>
                </div>
            </form>
@@ -90,9 +99,51 @@
    </div>
 
    <script type="text/javascript">
-       function showWaitMessage() {
+       document.getElementById('reportForm').addEventListener('submit', function() {
+           // Show download message
            document.getElementById("inProcess").style.display = "block";
-       }
+       });
+
+       document.getElementById('submitButton').addEventListener('click', function() {
+           document.getElementById("inProcess").style.display = "block";
+           var reportLevel = document.getElementById('reportLevel').value;
+           var reportType = document.getElementById('reportType').value;
+
+           let filename = '';
+
+           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date() + '_SUMMARY.csv'
+           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date() + '_DETAIL.csv'
+
+           // Send AJAX request to the backend
+           var xhr = new XMLHttpRequest();
+           xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
+           xhr.responseType = 'blob'; // Set response type to blob
+           xhr.onload = function() {
+               if (xhr.status === 200) {
+                   document.getElementById("inProcess").style.display = "none";
+                   // Create a blob URL from the response
+                   var blob = new Blob([xhr.response], { type: 'application/octet-stream' });
+                   var url = URL.createObjectURL(blob);
+                   // Create a link element and trigger the download
+                   var a = document.createElement('a');
+                   a.href = url;
+                   a.download = filename; // Set desired file name
+                   document.body.appendChild(a);
+                   a.click();
+                   document.body.removeChild(a);
+                   document.getElementById("reportSuccess").style.display = "block";
+                   URL.revokeObjectURL(url);
+               } else {
+                   // Handle error
+                   console.error('Error downloading file:', xhr.statusText);
+               }
+           };
+           xhr.onerror = function() {
+               // Handle network error
+               console.error('Network error');
+           };
+           xhr.send();
+       });
 
        function validateForm() {
            var reportLevel = document.getElementById("reportLevel").value;
