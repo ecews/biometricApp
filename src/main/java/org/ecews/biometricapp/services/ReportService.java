@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.ecews.biometricapp.entities.dtos.DeduplicationDetail;
 import org.ecews.biometricapp.entities.dtos.DeduplicationSummary;
 import org.ecews.biometricapp.repositories.ReportRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -12,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +21,19 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private final ReportRepository reportRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public ReportService(ReportRepository reportRepository) {
+    public ReportService(ReportRepository reportRepository, JdbcTemplate jdbcTemplate) {
         this.reportRepository = reportRepository;
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public List<Map<String, Object>> getDistinctFacilities() {
+        String sql = "SELECT DISTINCT pp.facility_id AS facilityId, bac.name AS facilityName " +
+                "FROM patient_person pp " +
+                "JOIN base_organisation_unit bac ON bac.id = pp.facility_id";
+
+        return jdbcTemplate.queryForList(sql);
     }
 
     public ByteArrayInputStream  generateSummaryReport (String deduplicationType) {

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.com">
+  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link href="/css/bootstrap.min.css" rel="stylesheet" >
+    <title>Biometric App</title>
+  </head>
+  <body>
+   
+   
+   <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">Biometric App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
+        </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="deduplication">Deduplication</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="reports">Reports</a>
+          </li>
+          <!--<li class="nav-item">
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>-->
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
+              </ul>
+          </li>
+      </ul>
+      <div>
+          <span class="navbar-text text-white">
+              Version: 1.0.0
+          </span>
+      		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
+      </div>
+    </div>
+  </div>
+</nav>
+
+   <div class="container text-center my-5">
+   		<h1>DOWNLOAD GENERATED XML FILES</h1>
+   		<h6> This will enable you upload client NDR recapture Status
+   		</h6>
+
+       <div id="inProcess" class="alert alert-info" role="alert" style="display: none;">
+           <label>File upload in process ... </label>
+       </div>
+
+       <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label th:text="${successMessage}"></label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+           <label th:text="${errorMessage}"></label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div class="row row text-center mt-5 w-80 m-auto">
+           <table class="table table-striped">
+               <thead>
+               <tr>
+                   <th scope="col">Number of Files</th>
+                   <th scope="col">File Name</th>
+                   <th scope="col">Last Modified</th>
+                   <th scope="col">Action</th>
+               </tr>
+               </thead>
+               <tbody>
+               <!-- Loop through files and populate table rows -->
+               <tr th:each="file : ${files}">
+                   <td th:text="${file.id}" scope="row">></td>
+                   <td th:text="${file.fileName}"></td>
+                   <td th:text="${file.lastModified}"></td>
+                   <td>
+                       <button type="button" class="download-button" th:attr="data-filename=${file.fileName}">Download</button>
+                   </td>
+               </tr>
+               </tbody>
+           </table>
+       </div>
+
+   </div>
+
+   <script>
+       // Get all elements with class "download-button" and attach click event listener
+       const downloadButtons = document.querySelectorAll(".download-button");
+       downloadButtons.forEach(function(button) {
+           button.addEventListener("click", function() {
+               const filename = this.getAttribute("data-filename");
+               download(filename);
+           });
+       });
+
+       function download(filename) {
+           document.getElementById("inProcess").style.display = "block";
+           const xhr = new XMLHttpRequest();
+           xhr.open("GET", "/api/v1/ndr/recapture/download/" + filename, true);
+           xhr.responseType = "arraybuffer";
+
+           xhr.onload = function() {
+               if (this.status === 200) {
+                   document.getElementById("inProcess").style.display = "none";
+                   const blob = new Blob([xhr.response], {type: "application/octet-stream"});
+                   const url = window.URL.createObjectURL(blob);
+                   const a = document.createElement("a");
+                   a.href = url;
+                   a.download = filename + '.zip';
+                   document.body.appendChild(a);
+                   a.click();
+                   window.URL.revokeObjectURL(url);
+                   document.body.removeChild(a);
+               } else {
+                   console.error("Failed to download file");
+               }
+           };
+
+           xhr.send();
+       }
+   </script>
+
+   <script type="text/javascript">
+       function showWaitMessage() {
+           document.getElementById("inProcess").style.display = "block";
+       }
+   </script>
+   <script src="/js/bootstrap.bundle.min.js" ></script>
+    
+  </body>
+</html>

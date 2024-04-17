@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.com">
+  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link href="/css/bootstrap.min.css" rel="stylesheet" >
+    <title>Biometric App</title>
+  </head>
+  <body>
+   
+   
+   <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">Biometric App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
+        </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="deduplication">Deduplication</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="reports">Reports</a>
+          </li>
+          <!--<li class="nav-item">
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>-->
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
+              </ul>
+          </li>
+      </ul>
+      <div>
+          <span class="navbar-text text-white">
+              Version: 1.0.0
+          </span>
+      		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
+      </div>
+    </div>
+  </div>
+</nav>
+
+   <div class="container text-center my-5">
+   		<h1>GENERATE NDR BIOMETRIC XML</h1>
+
+       <div id="inProcess" class="alert alert-info alert-dismissible fade show " role="alert" style="display: none;">
+           <label>Generating XML files ... </label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div id="success" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Done generating XML files</label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+           <label th:text="${errorMessage}"></label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+
+       <div class="row row text-center mt-5 w-50 m-auto">
+           <form id="reportForm">
+               <div class="mb-3">
+                   <div class="col">
+                       <select id="facilities"  name="facilities" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                           <option value="">Select Facility</option>
+                           <!-- Loop through facilities and populate options -->
+                           <option th:each="facility : ${facilities}"
+                                   th:value="${facility['facilityId']}"
+                                   th:text="${facility['facilityName']}"></option>
+                       </select>
+                   </div>
+               </div>
+
+               <div class="mb-3">
+                   <div class="col">
+                       <select id="recapture"  name="recapture" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                           <option selected>Select Recapture</option>
+                           <option value="1">Recapture One</option>
+                           <option value="2">Recapture Two</option>
+                           <option value="3">Recapture Three</option>
+                       </select>
+                   </div>
+               </div>
+
+               <div class="mb-3">
+                   <div class="col">
+                       <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate XML Files</button>
+                   </div>
+               </div>
+           </form>
+       </div>
+   </div>
+
+   <script type="text/javascript">
+       function validateForm() {
+           const facility = document.getElementById("facilities").value;
+           const recapture = document.getElementById("recapture").value;
+
+           if (facility && recapture) {
+               return true;
+           } else {
+               alert("Please select both Report Level and Report Type.");
+               return false;
+           }
+       }
+
+       document.getElementById("facilities").addEventListener("change", toggleSubmitButton);
+       document.getElementById("recapture").addEventListener("change", toggleSubmitButton);
+
+       function toggleSubmitButton() {
+           const facilities = document.getElementById("facilities").value;
+           const recapture = document.getElementById("recapture").value;
+           const submitButton = document.getElementById("submitButton");
+
+           submitButton.disabled = !((facilities !== 'Select Facility' && facilities) && (recapture !== 'Select Recapture' && recapture));
+       }
+   </script>
+   <script src="/js/bootstrap.bundle.min.js" ></script>
+   <script src="/js/jquery-3.7.1.min.js" ></script>
+
+   <script>
+       $(document).ready(function() {
+           $("#submitButton").click(function() {
+               document.getElementById("inProcess").style.display = "block";
+               const facilityId = $("#facilities").val(); // Replace with the actual facilityId
+               const recaptureType = $("#recapture").val();// Replace with the actual recaptureType
+
+               $.ajax({
+                   type: "GET",
+                   url: "/api/v1/ndr/recapture/facility/" + facilityId + "/" + recaptureType,
+                   success: function(response) {
+                       if (response) {
+                           document.getElementById("inProcess").style.display = "none";
+                           document.getElementById("success").style.display = "block";
+                       } else {
+                           document.getElementById("inProcess").style.display = "none";
+                       }
+                   },
+                   error: function(xhr, status, error) {
+                       console.error(xhr.responseText);
+                       alert("Error occurred while generating biometric details.");
+                   }
+               });
+           });
+       });
+   </script>
+  </body>
+</html>
