@@ -38,7 +38,7 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
             "hashed as templateTypeHash\n" +
             "FROM biometric where person_uuid = ?1 \n" +
             "AND biometric_type = 'FINGERPRINT' and archived = 0\n" +
-            "AND recapture > ?2\n" +
+            "AND recapture = ?2\n" +
             "AND version_iso_20 = true  and iso = true\n" +
             "AND enrollment_date >= ?3 \n" +
             "ORDER BY enrollment_date DESC LIMIT 10;", nativeQuery = true)

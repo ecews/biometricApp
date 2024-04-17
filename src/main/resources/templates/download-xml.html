@@ -83,7 +83,7 @@
                <tbody>
                <!-- Loop through files and populate table rows -->
                <tr th:each="file : ${files}">
-                   <td th:text="${file.id}" scope="row">></td>
+                   <td th:text="${file.files}" scope="row">></td>
                    <td th:text="${file.fileName}"></td>
                    <td th:text="${file.lastModified}"></td>
                    <td>

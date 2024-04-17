@@ -116,8 +116,8 @@
 
        document.getElementById('submitButton').addEventListener('click', function() {
            document.getElementById("inProcess").style.display = "block";
-           var reportLevel = document.getElementById('reportLevel').value;
-           var reportType = document.getElementById('reportType').value;
+           const reportLevel = document.getElementById('reportLevel').value;
+           const reportType = document.getElementById('reportType').value;
 
            let filename = '';
 
@@ -125,23 +125,23 @@
            if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date() + '_DETAIL.csv'
 
            // Send AJAX request to the backend
-           var xhr = new XMLHttpRequest();
+           const xhr = new XMLHttpRequest();
            xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
                if (xhr.status === 200) {
                    document.getElementById("inProcess").style.display = "none";
                    // Create a blob URL from the response
-                   var blob = new Blob([xhr.response], { type: 'application/octet-stream' });
-                   var url = URL.createObjectURL(blob);
+                   const blob = new Blob([xhr.response], {type: 'application/octet-stream'});
+                   const url = URL.createObjectURL(blob);
                    // Create a link element and trigger the download
-                   var a = document.createElement('a');
+                   const a = document.createElement('a');
                    a.href = url;
                    a.download = filename; // Set desired file name
                    document.body.appendChild(a);
                    a.click();
                    document.body.removeChild(a);
-                   document.getElementById("reportSuccess").style.display = "block";
+                   // document.getElementById("reportSuccess").style.display = "block";
                    URL.revokeObjectURL(url);
                } else {
                    // Handle error
