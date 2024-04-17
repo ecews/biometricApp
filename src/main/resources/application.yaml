@@ -6,9 +6,9 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/ewang
+    url: jdbc:postgresql://localhost:5432/gh_oron_issue
     username: postgres
-    password: amos33
+    password: ecews@2023
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
