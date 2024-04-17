@@ -4,7 +4,8 @@ public class ReportQueries {
 
     public static final String SUMMARY_REPORT_QUERY = """
             with deduplication as (
-                select person_uuid, date_of_deduplication, identifier_count, match_count, no_match_count, subject_count,
+                select person_uuid, date_of_deduplication, identifier_count, jsonb_array_length(matched_pairs) as match_count, 
+                (identifier_count - jsonb_array_length(matched_pairs)) AS no_match_count, subject_count,
                        ROW_NUMBER() OVER (PARTITION BY person_uuid ORDER BY date_of_deduplication DESC) AS rank
                 from identification_response where deduplication_type = ?
             ),bio_data AS (

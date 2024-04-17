@@ -19,8 +19,6 @@ public class IdentificationResponse {
 
     String personUuid;
     LocalDate dateOfDeduplication;
-    Integer matchCount;
-    Integer noMatchCount;
     String deduplicationType;
     Integer subjectCount;
     Integer identifierCount;
