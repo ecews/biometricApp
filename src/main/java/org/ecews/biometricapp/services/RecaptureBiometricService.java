@@ -16,7 +16,10 @@ import org.ecews.biometricapp.recapture.Container;
 import org.ecews.biometricapp.repositories.NDRCodeSetRepository;
 import org.ecews.biometricapp.repositories.NdrMessageLogRepository;
 import org.ecews.biometricapp.repositories.NdrXmlStatusRepository;
+import org.ecews.biometricapp.utils.DeDuplicationConfigs;
 import org.ecews.biometricapp.utils.ZipUtility;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;
@@ -51,22 +54,28 @@ public class RecaptureBiometricService {
 	private final NDRCodeSetRepository nDRCodeSetRepository;
 
 	private final NDRCodeSetResolverService ndrCodeSetResolverService;
-
-
 	public static final String BASE_DIR = "runtime/ndr/transfer/";
-	
-	
 	public boolean generateRecaptureBiometrics(Long facilityId, Integer recaptureType) {
 		String pathname = BASE_DIR + "temp/biorecapture/" + facilityId + "/";
 		cleanupFacility(facilityId, pathname);
 		AtomicInteger count = new AtomicInteger(0);
 		log.info("start generating recapture biometrics patients");
-		Iterable<String> patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType);
+		String deduplicationType;
+		if (recaptureType == 1) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE;
+		} else if (recaptureType == 2) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE;
+		} else if (recaptureType == 3) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO;
+		} else {
+			throw new IllegalArgumentException("Invalid recaptureType: " + recaptureType);
+		}
+		Iterable<String> patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType, deduplicationType.toString());
 		log.info("About {} patients are identified for generating NDR file", patientsIds.iterator().hasNext());
 		if (!patientsIds.iterator().hasNext()) {
 			return false;
 		}
-		log.info("fetching patient demographics");
+		log.info("fetching patient demographics **** {}, ", patientsIds);
 		List<PatientDemographics> demographics = new ArrayList<>();
 		patientsIds.forEach(id -> {
 					Optional<PatientDemographics> demographicsOptional =

@@ -34,6 +34,9 @@ public class DeduplicationSummaryRowMapper implements RowMapper<DeduplicationSum
         obj.setSurname(rs.getString("surname"));
         obj.setFirstName(rs.getString("first_name"));
         obj.setLgaOfResidence(rs.getString("lgaOfResidence"));
+        obj.setBaselineCount(rs.getInt("baseline"));
+        obj.setRecaptureOneCount(rs.getInt("recapture_1"));
+        obj.setRecaptureTwoCount(rs.getInt("recapture_2"));
         return obj;
     }
 }

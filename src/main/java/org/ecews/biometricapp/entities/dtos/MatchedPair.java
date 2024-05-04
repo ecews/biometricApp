@@ -10,4 +10,5 @@ public class MatchedPair {
     public String enrolledPatientFingerType;
     public String matchedPatientFingerType;
     public Integer score;
+    public Integer matchedRecapture;
 }

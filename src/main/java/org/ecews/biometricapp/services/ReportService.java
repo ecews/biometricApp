@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.ecews.biometricapp.entities.dtos.DeduplicationDetail;
 import org.ecews.biometricapp.entities.dtos.DeduplicationSummary;
 import org.ecews.biometricapp.repositories.ReportRepository;
+import org.ecews.biometricapp.utils.DeDuplicationConfigs;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,7 +41,7 @@ public class ReportService {
 
     public ByteArrayInputStream  generateSummaryReport (String deduplicationType) {
         var data = reportRepository.getSummaryReport(deduplicationType);
-        return writeDeduplicationResultsToCsvInMemory(data);
+        return writeDeduplicationResultsToCsvInMemory(data, deduplicationType);
     }
 
     public ByteArrayInputStream  generateDetailReport (String deduplicationType) {
@@ -47,23 +50,64 @@ public class ReportService {
         return writeDeduplicationDetailReport(filtered);
     }
 
-    public ByteArrayInputStream writeDeduplicationResultsToCsvInMemory(List<DeduplicationSummary> results) {
+    public ByteArrayInputStream writeDeduplicationResultsToCsvInMemory(List<DeduplicationSummary> results, String deduplicationType) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream))) {
-            // Writing header
-            String [] headers = new String[]{"State", "LGA", "Facility", "Datim Code", "Patient Id", "Surname", "First Name", "Sex", "LGA of Residence",
-                    "Hospital Number", "Unique Id", "Date of Birth", "ART Start Date", "Target Group", "Date of Deduplication", "Match Count", "No Match Count", "Subject Count", "Identifier Count"
-            };
+            List<String> headersList = new ArrayList<>(Arrays.asList(
+                    "State", "LGA", "Facility", "Datim Code", "Patient Id", "Surname", "First Name", "Sex", "LGA of Residence",
+                    "Hospital Number", "Unique Id", "Date of Birth", "ART Start Date", "Target Group", "Date of Deduplication",
+                    "Match Count", "Subject Count", "Identifier Count"
+            ));
+
+            switch (deduplicationType) {
+                case DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE:
+                    headersList.add("Baseline Match Count");
+                    break;
+                case DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE:
+                    headersList.add("Baseline Match Count");
+                    headersList.add("Recapture One Match Count");
+                    break;
+                case DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO:
+                    headersList.add("Baseline Match Count");
+                    headersList.add("Recapture One Match Count");
+                    headersList.add("Recapture Two Match Count");
+                    break;
+                default:
+                    break;
+            }
+
+            String[] headers = headersList.toArray(new String[0]);
             writer.writeNext(headers);
 
             // Writing data
             for (DeduplicationSummary result : results) {
-                writer.writeNext(new String[]{result.getState(), result.getLga(), result.getFacilityName(),
+                List<String> rowData = new ArrayList<>(Arrays.asList(
+                        result.getState(), result.getLga(), result.getFacilityName(),
                         result.getDatimId(), result.getPatientId(), result.getSurname(), result.getFirstName(), result.getSex(),
                         result.getLgaOfResidence(), result.getHospitalNumber(), result.getUniqueId(), String.valueOf(result.getDateOfBirth()),
-                        String.valueOf(result.getArtStartDate()), result.getTargetGroup(), String.valueOf(result.getDateOfDeduplication()), String.valueOf(result.getMatchCount()), String.valueOf(result.getNoMatchCount()),
-                        String.valueOf(result.getSubjectCount()), String.valueOf(result.getIdentifierCount())
-                });
+                        String.valueOf(result.getArtStartDate()), result.getTargetGroup(), String.valueOf(result.getDateOfDeduplication()),
+                        String.valueOf(result.getMatchCount()), String.valueOf(result.getSubjectCount()),
+                        String.valueOf(result.getIdentifierCount())
+                ));
+
+                switch (deduplicationType) {
+                    case DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE:
+                        rowData.add(String.valueOf(result.getBaselineCount()));
+                        break;
+                    case DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE:
+                        rowData.add(String.valueOf(result.getBaselineCount()));
+                        rowData.add(String.valueOf(result.getRecaptureOneCount()));
+                        break;
+                    case DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO:
+                        rowData.add(String.valueOf(result.getBaselineCount()));
+                        rowData.add(String.valueOf(result.getRecaptureOneCount()));
+                        rowData.add(String.valueOf(result.getRecaptureTwoCount()));
+                        break;
+                    default:
+                        break;
+                }
+
+                writer.writeNext(rowData.toArray(new String[0]));
             }
             writer.flush();
             return new ByteArrayInputStream(outputStream.toByteArray());

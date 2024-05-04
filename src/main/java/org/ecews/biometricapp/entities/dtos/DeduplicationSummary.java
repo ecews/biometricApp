@@ -34,4 +34,7 @@ public class DeduplicationSummary {
     String surname;
     String firstName;
     String lgaOfResidence;
+    Integer baselineCount;
+    Integer recaptureOneCount;
+    Integer recaptureTwoCount;
 }

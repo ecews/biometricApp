@@ -17,7 +17,8 @@ public class BiometricController {
     NService nService;
 
     @GetMapping("/")
-    public String home() {
+    public String home(Model model) {
+        model.addAttribute("devices", nService.getReaders());
         return "home";
     }
 
@@ -32,7 +33,10 @@ public class BiometricController {
     }
 
     @GetMapping("/capturing")
-    public String capturing () {return "capturing";}
+    public String capturing (Model model) {
+        model.addAttribute("devices", nService.getReaders());
+        return "capturing";
+    }
 
     @GetMapping("/run-deduplication")
     public String runDeduplication(@RequestParam("deduplicationType") String deduplicationType, Model model) {

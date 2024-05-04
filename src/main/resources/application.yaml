@@ -6,7 +6,7 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/gh_oron_issue
+    url: jdbc:postgresql://localhost:5432/uda_db
     username: postgres
     password: ecews@2023
   jpa:
@@ -17,3 +17,7 @@ spring:
     name: biometricApp
 server:
   port: 7071
+#intervention:
+#  enabled: true
+#  deduplication: true
+#percentage: 0.8

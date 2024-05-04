@@ -30,8 +30,24 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
+          <li class="nav-item">
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>
+          <!--<li class="nav-item">
+              <a class="nav-link text-white" href="replacement">Replacement</a>
+          </li>-->
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
+              </ul>
+          </li>
       </ul>
       <div>
+          <span class="navbar-text text-white">
+              Version: 1.0.1
+          </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
     </div>
@@ -39,9 +55,9 @@
 </nav>
 
    <div class="container text-center my-5">
-   		<h1>REPORTS GENERATOR</h1>
-   		<h6> Please kindly select report leve and report type to enable generate a report
-   		</h6>
+   		<h1>CLIENT BIOMETRIC REPLACEMENT</h1>
+   		<!--<h6> Please kindly select report leve and report type to enable generate a report
+   		</h6>-->
 
        <div id="inProcess" class="alert alert-info alert-dismissible fade show " role="alert" style="display: none;">
            <label>Generating report ... </label>
@@ -88,7 +104,7 @@
 
                <div class="mb-3">
                    <div class="col">
-                       <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate Report</button>
+                       <button id = "submitButton" type="button" class="btn btn-primary" disabled>Do Replacement</button>
                    </div>
                </div>
            </form>
@@ -102,30 +118,36 @@
        });
 
        document.getElementById('submitButton').addEventListener('click', function() {
+           document.getElementById("submitButton").disabled = true;
            document.getElementById("inProcess").style.display = "block";
-           var reportLevel = document.getElementById('reportLevel').value;
-           var reportType = document.getElementById('reportType').value;
+           const reportLevel = document.getElementById('reportLevel').value;
+           const reportType = document.getElementById('reportType').value;
 
-           const filename = reportType + '_' + Date() + (reportLevel === 'REPORT_LEVEL_SUMMARY') ? '_SUMMARY' : '_DETAIL' + '.csv'
+           let filename = '';
+
+           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date() + '_SUMMARY.csv'
+           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date() + '_DETAIL.csv'
 
            // Send AJAX request to the backend
-           var xhr = new XMLHttpRequest();
+           const xhr = new XMLHttpRequest();
            xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
+               console.log("Response from server ******* ")
+               document.getElementById("submitButton").enabled = true;
                if (xhr.status === 200) {
                    document.getElementById("inProcess").style.display = "none";
                    // Create a blob URL from the response
-                   var blob = new Blob([xhr.response], { type: 'application/octet-stream' });
-                   var url = URL.createObjectURL(blob);
+                   const blob = new Blob([xhr.response], {type: 'application/octet-stream'});
+                   const url = URL.createObjectURL(blob);
                    // Create a link element and trigger the download
-                   var a = document.createElement('a');
+                   const a = document.createElement('a');
                    a.href = url;
                    a.download = filename; // Set desired file name
                    document.body.appendChild(a);
                    a.click();
                    document.body.removeChild(a);
-                   document.getElementById("reportSuccess").style.display = "block";
+                   // document.getElementById("reportSuccess").style.display = "block";
                    URL.revokeObjectURL(url);
                } else {
                    // Handle error

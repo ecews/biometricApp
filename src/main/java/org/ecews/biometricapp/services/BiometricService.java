@@ -8,8 +8,11 @@ import org.ecews.biometricapp.utils.DeDuplicationConfigs;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +22,24 @@ public class BiometricService {
     private final JdbcTemplate jdbcTemplate;
 
     private final BiometricRepository biometricRepository;
+
+    public Set<String> getClientForIntervention(String deduplicationType, Double percentage) {
+        return biometricRepository.getClientForIntervention(deduplicationType, percentage);
+    }
+
+    public List<Biometric> getPersonBiometrics(String personUuid, Set<Integer> recaptures) {
+        return biometricRepository.getPersonBiometrics(personUuid, recaptures);
+    }
+    public List<Biometric> getInterventionPrintsForDeduplication (LocalDate backupDate, Set<Integer> recaptures, String deduplicationType){
+        return biometricRepository.getInterventionPrintsForDeduplication(backupDate, recaptures, deduplicationType);
+    }
+
+    public void updateBiometric(String id, byte[] template, String hashed) {
+        biometricRepository.updateBiometric(id, template, hashed);
+    }
+    public List<Biometric> getClientPrintsForIntervention(Set<String> clients, Set<Integer> recaptures){
+        return biometricRepository.getClientPrintsForIntervention(clients, recaptures);
+    }
 
     public List<Biometric> getNoMatchFingerprints (Long recapture, String deduplicationType) {
         return biometricRepository.getNoMatchFingerprints(recapture, deduplicationType);
@@ -32,8 +53,13 @@ public class BiometricService {
         return biometricRepository.getFingerprints(recapture);
     }
 
+
     public List<Biometric> getFingerprintsByNDRStatus(Long recapture, String status){
         return biometricRepository.getFingerprintsByNDRStatus(recapture, status);
+    }
+
+    public List<Biometric> getMatchedFingerprints(Long recapture, String deduplicationType){
+        return biometricRepository.getMatchedFingerprints(recapture, deduplicationType);
     }
 
     public List<Biometric> filterBiometricByRecapture (List<Biometric> biometrics, Integer recapture) {

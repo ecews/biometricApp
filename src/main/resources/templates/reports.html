@@ -30,8 +30,11 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="reports">Reports</a>
           </li>
-          <!--<li class="nav-item">
+          <li class="nav-item">
               <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+          </li>
+          <!--<li class="nav-item">
+              <a class="nav-link text-white" href="replacement">Replacement</a>
           </li>-->
           <li class="nav-item dropdown">
               <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
@@ -43,7 +46,7 @@
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.0
+              Version: 1.0.1
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
@@ -130,6 +133,7 @@
            xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
+               console.log("Response from server ******* ")
                document.getElementById("submitButton").enabled = true;
                if (xhr.status === 200) {
                    document.getElementById("inProcess").style.display = "none";

@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
       <link href="/css/bootstrap.min.css" rel="stylesheet" >
-    <title>Biometric App</title>
+      <link rel = "stylesheet" href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <title>Biometric App</title>
   </head>
   <body>
    
@@ -33,6 +34,9 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="capturing">Capture Biometric</a>
           </li>
+          <!--<li class="nav-item">
+              <a class="nav-link text-white" href="replacement">Replacement</a>
+          </li>-->
           <li class="nav-item dropdown">
               <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
               <ul class="dropdown-menu">
@@ -43,7 +47,7 @@
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.0
+              Version: 1.0.1
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
@@ -54,15 +58,15 @@
    <div class="container text-center mt-5 w-50">
 
        <h1>BIOMETRIC CAPTURING</h1>
-       <h6> This will aid you capture client fingerprints for backup purpose, you will be able to have backup fingerprints template sets.
-       </h6>
+       <!--<h6> This will aid you capture client fingerprints for backup purpose, you will be able to have backup fingerprints template sets.
+       </h6>-->
 
        <div id="inProcess" class="alert alert-info" role="alert" style="display: none;">
-           <label>Deduplication in process ... </label>
+           <label>Please place your finger on the scanner</label>
        </div>
 
-       <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-           <label th:text="${successMessage}"></label>
+       <div id="bbSuccess" class="alert alert-success alert-dismissible fade show" role="alert" style="display: none;">
+           <label > Done saving record</label>
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
@@ -71,38 +75,205 @@
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
-       <div class="row row text-center mt-5 w-50 m-auto">
-           <form method="get" th:action="@{/run-deduplication}" class="mt-5 row align-items-center">
-               <div class="mb-3">
-                   <div class="col">
-                       <select name="deduplicationType" class="form-select form-select-lg mb-3" aria-label="Large select example">
-                           <option selected>Choose Deduplication Type</option>
-                           <option value="DUPLICATE_CHECK">Duplicate Check</option>
-                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
-                           <option value="RECAPTURE_ONE_AND_BASELINE">Recapture One and Baseline</option>
-                           <option value="RECAPTURE_TWO_AND_ONE">Recapture Two and One</option>
-                           <option value="RECAPTURE_THREE_AND_TWO">Recapture Three and Two</option>
-                       </select>
-                   </div>
+       <div class="row input-group">
+           <label class="col-11">
+               <input id="search" aria-describedby="button-search" type="search" placeholder="Search using hospital number or unique id" class="form-control">
+           </label>
+           <div class="input-group-append col-1">
+               <button id="button-search" type="submit" class="btn btn-primary"> <i class="fa fa-search"> </i> </button>
+           </div>
+       </div>
+       <div id="searchResult">
+
+       </div>
+
+       <div id="displayLevel"></div>
+       <div id="capture" class="row row text-center mt-5 w-auto m-auto" style="display: none">
+           <div class="row">
+               <div class="col-4">
+                   <select id="devices"  name="devices" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                       <option value="">Select Scanner</option>
+                       <!-- Loop through facilities and populate options -->
+                       <option th:each="device : ${devices}"
+                               th:value="${device['deviceName']}"
+                               th:text="${device['deviceName']}"></option>
+                   </select>
                </div>
-               <div class="mb-3">
-                   <div class="col">
-                       <button th:onclick="showWaitMessage()" type="submit" class="btn btn-primary">Run Deduplication</button>
-                   </div>
+               <div class="col-4">
+                   <select id="templateType"  name="templateType" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                       <option selected>Select Finger</option>
+                       <option value="Left Thumb Finger">Left Thumb Finger</option>
+                       <option value="Left Index Finger">Left Index Finger</option>
+                       <option value="Left Middle Finger">Left Middle Finger</option>
+                       <option value="Left Ring Finger">Left Ring Finger</option>
+                       <option value="Left Little Finger">Left Little Finger</option>
+                       <option value="Right Thumb Finger">Right Thumb Finger</option>
+                       <option value="Right Index Finger">Right Index Finger</option>
+                       <option value="Right Middle Finger">Right Middle Finger</option>
+                       <option value="Right Ring Finger">Right Ring Finger</option>
+                       <option value="Right Little Finger">Right Little Finger</option>
+                   </select>
                </div>
-           </form>
+               <div class="col-4">
+                   <button id = "captureButton" type="button" class="btn btn-primary" disabled>Capture</button>
+               </div>
+           </div>
+
+       </div>
+
+       <div id="containerH" class="container" style="display: none">
+
+       </div>
+
+       <div class="row" >
+           <button style="display: none" id = "saveButton" type="button" class="btn btn-primary" >Save</button>
        </div>
 
    </div>
 
    <script type="text/javascript">
-       function showWaitMessage() {
-           document.getElementById("inProcess").style.display = "block";
+       document.getElementById("devices").addEventListener("change", toggleSubmitButton);
+       document.getElementById("templateType").addEventListener("change", toggleSubmitButton);
+
+       function toggleSubmitButton() {
+           const devices = document.getElementById("devices").value;
+           const templateType = document.getElementById("templateType").value;
+           const captureButton = document.getElementById("captureButton");
+
+           captureButton.disabled = !((devices !== 'Select Report Level' && devices) && (templateType !== 'Select Finger' && templateType));
        }
    </script>
 
    <script src="/js/bootstrap.bundle.min.js" ></script>
    <script src="/js/jquery-3.7.1.min.js" ></script>
+
+   <script>
+       let capturedBiometricDtoList = [];
+       let patient = {};
+
+       $(document).ready(function() {
+
+           $("#saveButton").click(function() {
+               document.getElementById("bbSuccess").style.display = "none";
+               $('#saveButton').attr('disabled','disabled');
+               $.ajax({
+                   type: "POST",
+                   url: "/api/v1/biometric/save-capture?personUuid=" + patient['uuid'],
+                   contentType: 'application/json',
+                   data: JSON.stringify(capturedBiometricDtoList),
+                   success: function(response) {
+                       capturedBiometricDtoList = [];
+                       document.getElementById("saveButton").style.display = "none";
+                       document.getElementById("bbSuccess").style.display = "block";
+                       $('#templateType').html('' +
+                           '<option selected>Select Finger</option>\n' +
+                           '                       <option value="Left Thumb Finger">Left Thumb Finger</option>\n' +
+                           '                       <option value="Left Index Finger">Left Index Finger</option>\n' +
+                           '                       <option value="Left Middle Finger">Left Middle Finger</option>\n' +
+                           '                       <option value="Left Ring Finger">Left Ring Finger</option>\n' +
+                           '                       <option value="Left Little Finger">Left Little Finger</option>\n' +
+                           '                       <option value="Right Thumb Finger">Right Thumb Finger</option>\n' +
+                           '                       <option value="Right Index Finger">Right Index Finger</option>\n' +
+                           '                       <option value="Right Middle Finger">Right Middle Finger</option>\n' +
+                           '                       <option value="Right Ring Finger">Right Ring Finger</option>\n' +
+                           '                       <option value="Right Little Finger">Right Little Finger</option>');
+                       document.getElementById("containerH").style.display = "none";
+                       getBackupLevel(patient['uuid'])
+
+                        console.log(response)
+                   },
+                   error: function(xhr, status, error) {
+                       $('#saveButton').attr('enabled','enabled');
+                       document.getElementById("containerH").style.display = "none";
+                       document.getElementById("capture").style.display = "none";
+                   }
+               });
+           })
+
+           $("#button-search").click(function() {
+               const search = $("#search").val();
+               document.getElementById("containerH").style.display = "none";
+               document.getElementById("capture").style.display = "none";
+               $.ajax({
+                   type: "GET",
+                   url: "/api/v1/biometric/patient?search=" + search,
+                   success: function(response) {
+                       patient = response
+                       const holder = $('<div id="patientHolder" class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-1"></div>')
+                       const name = $('<div className="col p-1 border bg-dark"> Name:&nbsp; '+patient['surname'] +'&nbsp;' + patient['firstName']+'</div>');
+                       const gender = $('<div className="col p-1 border bg-dark"> Gender:&nbsp; '+patient['sex'] +'</div>');
+                       const dateOfBirth = $('<div className="col p-1 border bg-dark"> Date of Birth:&nbsp; '+patient['dateOfBirth'] +'</div>');
+                       const artStartDate = $('<div className="col p-1 border bg-dark"> ART Start Date:&nbsp; '+patient['dateStarted'] +'</div>');
+                       holder.append(name).append(gender).append(dateOfBirth).append(artStartDate)
+                       $('#searchResult').html(holder);
+                       getBackupLevel(patient['uuid']);
+
+                       document.getElementById("containerH").style.display = "block";
+                       document.getElementById("capture").style.display = "block";
+                   },
+                   error: function(xhr, status, error) {
+                       document.getElementById("containerH").style.display = "none";
+                       document.getElementById("capture").style.display = "none";
+                   }
+               });
+           })
+
+           $("#captureButton").click(function() {
+               document.getElementById("inProcess").style.display = "block";
+               $('#captureButton').attr('disabled','disabled');
+               const templateType = $("#templateType").val(); // Replace with the actual facilityId
+               const devices = $("#devices").val();// Replace with the actual recaptureType
+               // console.log("Template type is ****** ", devices)
+               $.ajax({
+                   type: "POST",
+                   url: "/api/v1/biometric/capture?fingerType=" + templateType + "&reader=" + devices,
+                   contentType: 'application/json',
+                   data: JSON.stringify(capturedBiometricDtoList),
+                   success: function(response) {
+                       document.getElementById("inProcess").style.display = "none";
+                       capturedBiometricDtoList = response
+                       if (capturedBiometricDtoList.length > 5){
+                           document.getElementById("saveButton").style.display = "block";
+                       }else {
+                           document.getElementById("saveButton").style.display = "none";
+                       }
+                       $('#submitButton').attr('enabled','enabled');
+                       $('#templateType option[value="' + templateType + '"]').remove();
+                       const holder = $('<div id="fingerDisplay" class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-1"></div>')
+                       $.each(capturedBiometricDtoList, function(index, item) {
+                           const fingerCard = $('<div className="col p-2 border bg-dark"></div>');
+                           const image = $('<div className="row"><img style="height: 200px; width: 150px;" src="' + item['base64Image'] + '" alt="Image"></div>');
+                           const text = $('<div className="row"><label>' + item['templateType'] + '</label></div>');
+                           const text2 = $('<div className="row"><label>Quality:&nbsp;' + item['imageQuality'] + '</label></div>');
+                           fingerCard.append(image).append(text).append(text2)
+                           holder.append(fingerCard);
+                       })
+                       $('#containerH').html(holder);
+                   },
+                   error: function(xhr, status, error) {
+                        $('#submitButton').attr('enabled','enabled');
+                       document.getElementById("inProcess").style.display = "none";
+                       console.error(xhr.responseText);
+                       alert("Error occurred while generating biometric details.");
+                   }
+               });
+           });
+       });
+
+       function getBackupLevel (peronUuid) {
+           $.ajax({
+               type: "GET",
+               url: "/api/v1/biometric/backup-level?personUuid=" + peronUuid,
+               success: function(response) {
+                   const level = $('<h3 >' + response +'</h3>');
+                   $('#displayLevel').html(level);
+               },
+               error: function(xhr, status, error) {
+                   console.log("Error getting backup level")
+               }
+           });
+       }
+   </script>
     
   </body>
 </html>

@@ -78,12 +78,13 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
    
    @Query(value =
            """ 
-           select distinct person_uuid  from biometric
-                      where facility_id = ?1 
-                      and recapture = ?2 
-                      and archived = 0
+               select distinct b.person_uuid from biometric b
+                       inner join identification_response i on b.person_uuid = i.person_uuid
+                         where b.facility_id = ?1
+                         and b.recapture = ?2
+                         and b.archived = 0 and i.deduplication_type= ?3 and i.identifier_count != 0 and jsonb_array_length(i.matched_pairs) >= 1
                    """, nativeQuery = true)
-   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
+   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType, String deduplicationType);
    
    @Query(value = "select person_uuid from hiv_art_pharmacy \n" +
            "where last_modified_date > ?1\n" +
