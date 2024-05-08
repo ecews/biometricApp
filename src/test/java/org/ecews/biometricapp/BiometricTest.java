@@ -53,7 +53,7 @@ public class BiometricTest {
 
     @Test
     public void testGetClientForIntervention() {
-        Set<String> strings = biometricService.getClientForIntervention("RECAPTURE_TWO_AND_ONE", 1.0);
+        Set<String> strings = biometricService.getClientForIntervention("RECAPTURE_TWO_AND_ONE", 1.0, LocalDate.now());
         if(strings.contains("d6b206a8-c6ee-4538-bbe9-9f099b6eacb9")) {
             log.info("I found the patient ****** ");
         }
@@ -62,7 +62,7 @@ public class BiometricTest {
 
     @Test
     public void getClientPrintsFOrIntervention() {
-        Set<String> strings = biometricService.getClientForIntervention("RECAPTURE_ONE_AND_BASELINE", 0.85);
+        Set<String> strings = biometricService.getClientForIntervention("RECAPTURE_ONE_AND_BASELINE", 0.85, LocalDate.now());
         Set<Integer> recaptures = new HashSet<>();
         recaptures.add(0);
         recaptures.add(1);

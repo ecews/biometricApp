@@ -11,6 +11,7 @@ import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Entity(name = "biometric")
@@ -78,6 +79,18 @@ public class Biometric implements Serializable, Persistable<String> {
 
     @Column(name = "count")
     private Integer count;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "last_modified_date")
+    private LocalDateTime lastModifiedDate;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Column(name = "last_modified_by")
+    private String lastModifiedBy;
 
     @Override
     public boolean isNew() {

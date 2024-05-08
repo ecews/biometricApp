@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDate;
+
 @SpringBootTest
 @Slf4j
 public class NServiceTest {
@@ -21,7 +23,7 @@ public class NServiceTest {
 
     @Test
     public void testRecaptureOneAndBaseline (){
-        nService.recaptureOneAndBaseline(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE);
+        nService.recaptureOneAndBaseline(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE, LocalDate.now());
         log.info("Recapture deduplication with baseline ****** ");
     }
 
@@ -33,7 +35,7 @@ public class NServiceTest {
 
     @Test
     public void testDoIntervention() {
-        nInterventionService.doIntervention(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE, 0.85, 0, 1);
+        nInterventionService.doIntervention(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE, 0.85, 0, 1,Boolean.FALSE,  LocalDate.now());
     }
 
     @Test

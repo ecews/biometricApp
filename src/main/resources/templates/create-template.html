@@ -22,7 +22,7 @@
           <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
         </li>
           <li class="nav-item">
-              <a class="nav-link text-white" href="import-export">Import /Export</a>
+              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
           </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
@@ -55,47 +55,39 @@
 </nav>
 
    <div class="container text-center my-5">
-   		<h1>IMPORT / EXPORT</h1>
-   		<h6> This will enable you upload client NDR recapture Status
-   		</h6>
+   		<h1>TEMPLATE CREATION</h1>
 
        <div id="inProcess" class="alert alert-info" role="alert" style="display: none;">
-           <label>File upload in process ... </label>
+           <label>Creation in process ... </label>
        </div>
-
-       <div id="inProcessExport" class="alert alert-info" role="alert" style="display: none;">
-           <label>File export in process ... </label>
+       <div id="inProcessDownload" class="alert alert-info" role="alert" style="display: none;">
+           <label>Download in process ... </label>
        </div>
-
-       <div style="display: none;" id="successExport" class="alert alert-success alert-dismissible fade show" role="alert">
-           <label >File export completed</label>
+       <div id="inProcessUpload" class="alert alert-info" role="alert" style="display: none;">
+           <label>Upload in process ... </label>
+       </div>
+       <div id="success" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Done with creation</label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+       <div id="successDownload" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Download completed</label>
+           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       </div>
+       <div id="successUpload" style="display: none;" class="alert alert-success alert-dismissible fade show" role="alert">
+           <label>Upload completed</label>
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
-       <div id="inProcessImport" class="alert alert-info" role="alert" style="display: none;">
-           <label>File import in process ... </label>
-       </div>
-
-
-       <div style="display: none;" id="successImport" class="alert alert-success alert-dismissible fade show" role="alert">
-           <label >File import completed</label>
-           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-       </div>
-
-       <div id="inProcessRecapture" class="alert alert-info" role="alert" style="display: none;">
-           <label>Upload of recapture status in process ... </label>
-       </div>
-
-
-       <div style="display: none;" id="successRecapture" class="alert alert-success alert-dismissible fade show" role="alert">
-           <label> Recapture status upload completed </label>
+       <div id="failure" style="display: none;" class="alert alert-danger alert-dismissible fade show" role="alert">
+           <label>Done with creation</label>
            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
        </div>
 
        <div class="row row text-center mt-5 w-50 m-auto">
            <div class="mb-3">
                <div class="col">
-                   <input name="file" class="form-control form-control-lg" id="file" type="file">
+                   <input id="file" name="file" class="form-control form-control-lg" type="file">
                </div>
                <div class="col mt-3" >
                    <input id="fileName" class="form-control" type="text" placeholder="Enter file name" aria-label="default input example">
@@ -103,14 +95,18 @@
            </div>
            <div class="mb-3 col row">
                <div class="col">
-                   <button id="recaptureStatus" type="button" class="btn btn-primary">Recapture Status</button>
+                   <button id="createTemplate" type="button" class="btn btn-primary">Create Template</button>
                </div>
                <div class="col">
-                   <button id="export" type="button" class="btn btn-outline-info">Export</button>
+                   <button id="downloadTemplate" type="button" class="btn btn-outline-info">Download Template</button>
                </div>
                <div class="col">
-                   <button id="import" type="button" class="btn btn-outline-primary">Import</button>
+                   <button id="uploadTemplate" type="button" class="btn btn-outline-primary">Upload Template</button>
                </div>
+           </div>
+
+           <div class="mb-3">
+
            </div>
        </div>
 
@@ -121,19 +117,11 @@
 
    <script type="text/javascript">
        $(document).ready(function() {
-           $('#export').click(function() {
-               const fileName = $('#fileName').val()
-               if(fileName) {
-                   download(fileName)
-               }else {
-                   alert("File name is blank")
-               }
-           })
 
-           $('#recaptureStatus').click(function() {
+           $('#uploadTemplate').click(function() {
                if($('#file').val()) {
-                   document.getElementById("inProcessRecapture").style.display = "block";
-                   document.getElementById("recaptureStatus").disabled = true
+                   document.getElementById("inProcessUpload").style.display = "block";
+                   document.getElementById("uploadTemplate").disabled = true
                    // Get the file input element
                    var fileInput = document.getElementById('file');
                    // Get the file object
@@ -144,63 +132,15 @@
                    formData.append('file', file);
                    // Send the file to the server using AJAX
                    $.ajax({
-                       url: '/api/v1/biometric/recapture-status', // Your server-side endpoint
+                       url: '/api/v1/biometric/upload-template', // Your server-side endpoint
                        type: 'POST',
                        data: formData,
                        processData: false, // Prevent jQuery from processing the data
                        contentType: false, // Set content type to false to prevent jQuery from setting Content-Type
                        success: function(response) {
-                           document.getElementById("recaptureStatus").disabled = false;
-                           document.getElementById("inProcessRecapture").style.display = "none";
-                           document.getElementById("successRecapture").style.display = "block";
-                           $('#file').val("");
-                           // Handle successful upload
-                           console.log(response);
-                       },
-                       error: function(xhr, status, error) {
-                           document.getElementById("inProcessRecapture").style.display = "none";
-                           $('#uploadTemplate').attr('enabled','enabled');
-                           // Handle upload error
-                           console.error('Upload failed:', error);
-                       },
-                       xhr: function() {
-                           // Create custom XHR to track upload progress
-                           var xhr = $.ajaxSettings.xhr();
-                           xhr.upload.onprogress = function(event) {
-                               var percentComplete = (event.loaded / event.total) * 100;
-                               console.log('Upload progress: ' + percentComplete.toFixed(2) + '%');
-                           };
-                           return xhr;
-                       }
-                   });
-               }else {
-                   alert('No file selected ')
-               }
-           });
-
-           $('#import').click(function() {
-               if($('#file').val()) {
-                   document.getElementById("inProcessImport").style.display = "block";
-                   document.getElementById("import").disabled = true
-                   // Get the file input element
-                   var fileInput = document.getElementById('file');
-                   // Get the file object
-                   var file = fileInput.files[0];
-                   // Create a FormData object
-                   var formData = new FormData();
-                   // Append the file to the FormData object
-                   formData.append('file', file);
-                   // Send the file to the server using AJAX
-                   $.ajax({
-                       url: '/api/v1/biometric/ingest-files', // Your server-side endpoint
-                       type: 'POST',
-                       data: formData,
-                       processData: false, // Prevent jQuery from processing the data
-                       contentType: false, // Set content type to false to prevent jQuery from setting Content-Type
-                       success: function(response) {
-                           document.getElementById("import").disabled = false;
-                           document.getElementById("inProcessImport").style.display = "none";
-                           document.getElementById("successImport").style.display = "block";
+                           document.getElementById("uploadTemplate").disabled = false;
+                           document.getElementById("inProcessUpload").style.display = "none";
+                           document.getElementById("successUpload").style.display = "block";
                            $('#file').val("");
                            // Handle successful upload
                            console.log(response);
@@ -225,22 +165,77 @@
                    alert('No file selected ')
                }
            });
-       })
+           // Event listener for the upload button
+           $('#createTemplate').click(function() {
+               if($('#file').val()) {
+                   document.getElementById("inProcess").style.display = "block";
+                   $('#createTemplate').attr('disabled','disabled');
+                   // Get the file input element
+                   var fileInput = document.getElementById('file');
+                   // Get the file object
+                   var file = fileInput.files[0];
+                   // Create a FormData object
+                   var formData = new FormData();
+                   // Append the file to the FormData object
+                   formData.append('file', file);
+                   // Send the file to the server using AJAX
+                   $.ajax({
+                       url: '/api/v1/biometric/create-template', // Your server-side endpoint
+                       type: 'POST',
+                       data: formData,
+                       processData: false, // Prevent jQuery from processing the data
+                       contentType: false, // Set content type to false to prevent jQuery from setting Content-Type
+                       success: function(response) {
+                           // Handle successful upload
+                           console.log(response);
+                           $('#createTemplate').attr('enabled','enabled');
+                           document.getElementById("inProcess").style.display = "none";
+                           document.getElementById("success").style.display = "block";
+                       },
+                       error: function(xhr, status, error) {
+                           document.getElementById("inProcess").style.display = "none";
+                           $('#createTemplate').attr('enabled','enabled');
+                           // Handle upload error
+                           console.error('Upload failed ******* ');
+                       },
+                       xhr: function() {
+                           // Create custom XHR to track upload progress
+                           var xhr = $.ajaxSettings.xhr();
+                           xhr.upload.onprogress = function(event) {
+                               var percentComplete = (event.loaded / event.total) * 100;
+                               console.log('Upload progress: ' + percentComplete.toFixed(2) + '%');
+                           };
+                           return xhr;
+                       }
+                   });
+               }else {
+                   alert('No file selected ')
+               }
+           });
 
+           $('#downloadTemplate').click(function() {
+               const fileName = $('#fileName').val()
+               if(fileName) {
+                   download(fileName)
+               }else {
+                   alert("File name is blank")
+               }
+           })
+       });
        function download(filename) {
-           document.getElementById("inProcessExport").style.display = "block";
+           document.getElementById("inProcessDownload").style.display = "block";
            var fileInput = document.getElementById('file');
            var file = fileInput.files[0]
            var formData = new FormData();
 
            formData.append('file', file);
            const xhr = new XMLHttpRequest();
-           xhr.open("GET", "/api/v1/biometric/export-file/" + filename, true);
+           xhr.open("POST", "/api/v1/biometric/download-template/" + filename, true);
 
            xhr.onload = function() {
                if (this.status === 200) {
-                   document.getElementById("inProcessExport").style.display = "none";
-                   document.getElementById("successExport").style.display = "block";
+                   document.getElementById("inProcessDownload").style.display = "none";
+                   document.getElementById("successDownload").style.display = "block";
                    const blob = new Blob([xhr.response], {type: "application/octet-stream"});
                    const url = window.URL.createObjectURL(blob);
                    const a = document.createElement("a");
@@ -251,13 +246,14 @@
                    window.URL.revokeObjectURL(url);
                    document.body.removeChild(a);
                } else {
-                   document.getElementById("inProcessExport").style.display = "none";
                    console.error("Failed to download file");document.getElementById("inProcessDownload").style.display = "none";
+
                }
            };
 
            xhr.send(formData);
        }
+
    </script>
 
   </body>

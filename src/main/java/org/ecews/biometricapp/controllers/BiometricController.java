@@ -9,6 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
+
 @Controller
 @Slf4j
 public class BiometricController {
@@ -27,7 +29,7 @@ public class BiometricController {
         return "deduplication";
     }
 
-    @GetMapping("/recapture-status")
+    @GetMapping("/import-export")
     public String recaptureStatus() {
         return "recapture-status";
     }
@@ -38,41 +40,49 @@ public class BiometricController {
         return "capturing";
     }
 
+    @GetMapping("/create-template")
+    public String createTemplate (Model model) {
+        return "create-template";
+    }
+
     @GetMapping("/run-deduplication")
     public String runDeduplication(@RequestParam("deduplicationType") String deduplicationType, Model model) {
 
-        if(deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE)) {
-            nService.recaptureOneAndBaseline(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE);
-            model.addAttribute("successMessage", "Done running recapture one baseline deduplication");
-            return "deduplication";
-        } else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK)) {
-            nService.recaptureOneDuplicateCheck(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK);
-            model.addAttribute("successMessage", "Done running recapture one duplicate check deduplication");
-            return "deduplication";
-        }
-        else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE)) {
-            nService.recaptureTwoAndRecaptureOne(DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE);
-            model.addAttribute("successMessage", "Done running recapture two and one deduplication");
-            return "deduplication";
-        }
-        else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO)) {
-            nService.recaptureThreeAndRecaptureTwo(DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO);
-            model.addAttribute("successMessage", "Done running recapture three and two deduplication");
-            return "deduplication";
-        }
-        else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK)) {
-            nService.recaptureTwoDuplicateCheck(DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK);
-            model.addAttribute("successMessage", "Done running recapture two duplicate check");
-            return "deduplication";
-        }
-        else if (deduplicationType.equals(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK)) {
-            nService.recaptureThreeDuplicateCheck(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK);
-            model.addAttribute("successMessage", "Done running recapture three duplicate check");
-            return "deduplication";
-        }
-        else {
-            model.addAttribute("errorMessage", "No deduplication type selected");
-            return "deduplication";
+        switch (deduplicationType) {
+            case DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE -> {
+                nService.recaptureOneAndBaseline(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE, LocalDate.now());
+                model.addAttribute("successMessage", "Done running recapture one baseline deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK -> {
+                nService.recaptureOneDuplicateCheck(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK);
+                model.addAttribute("successMessage", "Done running recapture one duplicate check deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE -> {
+                nService.recaptureTwoAndRecaptureOne(DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE, LocalDate.now());
+                model.addAttribute("successMessage", "Done running recapture two and one deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO -> {
+                nService.recaptureThreeAndRecaptureTwo(DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO, LocalDate.now());
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK -> {
+                nService.recaptureTwoDuplicateCheck(DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK);
+                model.addAttribute("successMessage", "Done running recapture two duplicate check");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK -> {
+                nService.recaptureThreeDuplicateCheck(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK);
+                model.addAttribute("successMessage", "Done running recapture three duplicate check");
+                return "deduplication";
+            }
+            default -> {
+                model.addAttribute("errorMessage", "No deduplication type selected");
+                return "deduplication";
+            }
         }
 
     }

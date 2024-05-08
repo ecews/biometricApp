@@ -36,9 +36,9 @@ public class AllRepository {
             String uuid = rs.getString("uuid");
             String surname = rs.getString("surname");
             String firstName = rs.getString("first_name");
-            LocalDate dateOfBirth = rs.getDate("date_of_birth").toLocalDate();
+            LocalDate dateOfBirth = rs.getDate("date_of_birth") != null ? rs.getDate("date_of_birth").toLocalDate() : null;
             String sex = rs.getString("sex");
-            LocalDate dateStarted = rs.getDate("date_started").toLocalDate();
+            LocalDate dateStarted = rs.getDate("date_started") != null ? rs.getDate("date_started").toLocalDate() : null;
 
             return new PatientInfo(uuid, surname, firstName, dateOfBirth, sex, dateStarted);
         });

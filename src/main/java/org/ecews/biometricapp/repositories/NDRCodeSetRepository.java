@@ -75,14 +75,13 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
            "AND arc.archived = 0 "+
            "AND  arc.person_uuid = ?1 ORDER BY arc.visit_date DESC LIMIT 1", nativeQuery = true)
    Optional<ArtCommencementDTO> getArtCommencementByPatientUuid(String patientUuid);
-   
+   // -- and i.deduplication_type= ?3 and i.identifier_count != 0 -- and jsonb_array_length(i.matched_pairs) >= 0
    @Query(value =
            """ 
                select distinct b.person_uuid from biometric b
-                       inner join identification_response i on b.person_uuid = i.person_uuid
                          where b.facility_id = ?1
                          and b.recapture = ?2
-                         and b.archived = 0 and i.deduplication_type= ?3 and i.identifier_count != 0 and jsonb_array_length(i.matched_pairs) >= 1
+                         and b.archived = 0 
                    """, nativeQuery = true)
    Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType, String deduplicationType);
    

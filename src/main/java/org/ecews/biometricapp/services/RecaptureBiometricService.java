@@ -71,6 +71,7 @@ public class RecaptureBiometricService {
 			throw new IllegalArgumentException("Invalid recaptureType: " + recaptureType);
 		}
 		Iterable<String> patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType, deduplicationType.toString());
+
 		log.info("About {} patients are identified for generating NDR file", patientsIds.iterator().hasNext());
 		if (!patientsIds.iterator().hasNext()) {
 			return false;
