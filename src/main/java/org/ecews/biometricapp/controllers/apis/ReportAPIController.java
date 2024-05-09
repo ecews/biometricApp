@@ -32,7 +32,7 @@ public class ReportAPIController {
     @GetMapping(value = "/generate-reports", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public ResponseEntity<Resource> generateCSVReport(
-            @RequestParam("reportType") String reportType, @RequestParam("reportLevel") String reportLevel, Model model
+            @RequestParam("reportType") String reportType, @RequestParam("reportLevel") String reportLevel
     ) {
         ByteArrayInputStream inputStream = null;
 

@@ -51,13 +51,31 @@ public class NInterventionService {
         this.interventionResponseService = interventionResponseService;
     }
 
-    public void doIntervention (String deduplicationType, Double percentage, Integer base, Integer recapture) {
+    public void doIntervention (String deduplicationType, Double percentage,
+                                Integer base, Integer recapture,
+                                Boolean isAPI, LocalDate dateOfDeduplication) {
 
         Set<Integer> recaptures = new HashSet<>();
         recaptures.add(base);
         recaptures.add(recapture);
 
-        var clients = biometricService.getClientForIntervention(deduplicationType, percentage);
+        var clients = biometricService.getClientForIntervention(deduplicationType, percentage, dateOfDeduplication);
+
+        if(isAPI) {
+            var countBase = biometricService.getFingerCountForDate(dateOfDeduplication, deduplicationType);
+            var countReplaced = sysBackupRepository.getFingerCountForDate(dateOfDeduplication);
+            if (!countReplaced.isEmpty()) {
+                countBase.stream().parallel()
+                        .forEach(c -> {
+                            countReplaced.forEach(ct -> {
+                                if (c.getPersonUuid().equals(ct.getPersonUuid()) && Objects.equals(c.getFingerCount(), ct.getFingerCount())){
+                                    clients.remove(c.getPersonUuid());
+                                }
+                            });
+                        });
+            }
+        }
+
         var  biometrics = biometricService.getClientPrintsForIntervention(clients, recaptures);
         var groupBiometrics = biometrics.stream().collect(Collectors.groupingBy(Biometric::getPersonUuid));
 
@@ -65,58 +83,59 @@ public class NInterventionService {
                 // removing duplicate keys
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (existingValue, newValue) -> existingValue))
                 .forEach((key, value) -> {
-
                     var baseBiometric = value.stream().filter(f -> Objects.equals(f.getRecapture(), base)).toList();
                     var recaptureBiometric = value.stream().filter(f -> Objects.equals(f.getRecapture(), recapture)).toList();
-
                     var replacedRecaptured = new ArrayList<Biometric>();
-
                     baseBiometric.forEach(bb -> {
                         log.info("Recapture count ****** {}", bb.getRecapture());
                         recaptureBiometric.forEach(rb -> {
                             if (StringUtils.equals(bb.getTemplateType().trim().toLowerCase(), rb.getTemplateType().trim().toLowerCase())) {
                                 // log.info("Template position is equal ******");
                                 byte[] template = bb.getTemplate();
-                                template[25] = 0x00;
-                                // Create a new print from the older one
-                                NFRecord record = convertTemplateToNFRecord(template);
+                                if (template.length >= 25) {
+                                    template[25] = 0x00;
+                                    // Create a new print from the older one
+                                    NFRecord record = convertTemplateToNFRecord(template);
 
-                                if (record != null) {
-                                    int size = record.getMinutiae().size();
-                                    assert bb.getId() != null;
-                                    Optional<MPosition> position = mPositionRepository.findById(bb.getId());
-                                    int[] indexes = {};
-                                    if (position.isPresent()) {
-                                        indexes = convertStringToArray(position.get().getMIndex());
+                                    if (record != null) {
+                                        int size = record.getMinutiae().size();
+                                        assert bb.getId() != null;
+                                        Optional<MPosition> position = mPositionRepository.findById(bb.getId());
+                                        int[] indexes = {};
+                                        if (position.isPresent()) {
+                                            indexes = convertStringToArray(position.get().getMIndex());
+                                        }
+                                        int index = getIndex(size, indexes);
+                                        byte[] newTemplate = createNewTemplate(index, record);
+
+                                        if (newTemplate != null) {
+                                            updateBiometric(rb.getId(), bcryptHash(newTemplate), newTemplate, record.getQuality());
+                                            indexes = ArrayUtils.add(indexes, index);
+                                            MPosition mPosition = new MPosition();
+                                            mPosition.setId(bb.getId());
+                                            mPosition.setMIndex(Arrays.toString(indexes));
+                                            mPositionService.saveUpdatePosition(mPosition);
+
+                                            SysBackup sysBackup = new SysBackup();
+                                            BeanUtils.copyProperties(rb, sysBackup);
+                                            sysBackup.setBackupDate(LocalDate.now());
+                                            sysBackupRepository.save(sysBackup);
+
+                                            rb.setTemplate(newTemplate);
+                                            rb.setHashed(bcryptHash(newTemplate));
+                                            rb.setImageQuality((int) record.getQuality());
+
+                                            replacedRecaptured.add(rb);
+
+                                        }else {
+                                            log.info("New template created is null *********** {}", bb.getId());
+                                        }
+
+                                    } else {
+                                        log.error("Creation of NRecord failed for biometric id: ******** {}", bb.getId());
                                     }
-                                    int index = getIndex(size, indexes);
-                                    byte[] newTemplate = createNewTemplate(index, record);
-
-                                    if (newTemplate != null) {
-                                        updateBiometric(rb.getId(), bcryptHash(newTemplate), newTemplate, record.getQuality());
-                                        indexes = ArrayUtils.add(indexes, index);
-                                        MPosition mPosition = new MPosition();
-                                        mPosition.setId(bb.getId());
-                                        mPosition.setMIndex(Arrays.toString(indexes));
-                                        mPositionService.saveUpdatePosition(mPosition);
-
-                                        SysBackup sysBackup = new SysBackup();
-                                        BeanUtils.copyProperties(rb, sysBackup);
-                                        sysBackup.setBackupDate(LocalDate.now());
-                                        sysBackupRepository.save(sysBackup);
-
-                                        rb.setTemplate(newTemplate);
-                                        rb.setHashed(bcryptHash(newTemplate));
-                                        rb.setImageQuality((int) record.getQuality());
-
-                                        replacedRecaptured.add(rb);
-
-                                    }else {
-                                        log.info("New template created is null *********** {}", bb.getId());
-                                    }
-
                                 } else {
-                                    log.error("Creation of NRecord failed for biometric id: ******** {}", bb.getId());
+                                    log.error("Template length is less than 25 ***** ");
                                 }
                             }
                         });

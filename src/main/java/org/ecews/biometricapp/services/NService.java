@@ -43,7 +43,7 @@ public class NService {
     @Value("${intervention.enabled:false}")
     private boolean interventionEnabled;
 
-    @Value("${percentage:0.9}")
+    @Value("${percentage:1.0}")
     private double percentage;
     private NDeviceManager deviceManager;
     private final BiometricService biometricService;
@@ -58,14 +58,14 @@ public class NService {
         this.interventionResponseService = interventionResponseService;
     }
 
-    public void recaptureOneAndBaseline(String deduplicationType) {
+    public void recaptureOneAndBaseline(String deduplicationType, LocalDate deduplicationDate) {
         // Getting all baseline prints
         var baselinePrints = biometricService.getFingerprints(1L);
         var recaptureOneNMPrints = biometricService.getNoMatchFingerprints(1L, deduplicationType);
         prepareForDeduplication(deduplicationType, baselinePrints, recaptureOneNMPrints, 0,1);
         // Doing intervention after deduplication
         if (interventionEnabled) {
-            nInterventionService.doIntervention(deduplicationType, percentage, 0, 1);
+            nInterventionService.doIntervention(deduplicationType, percentage, 0, 1, Boolean.FALSE, deduplicationDate);
         }
 
     }
@@ -80,7 +80,7 @@ public class NService {
         doIdentification(fingers, groupedBiometrics, deduplicationType);
     }
 
-    public void recaptureTwoAndRecaptureOne(String deduplicationType) {
+    public void recaptureTwoAndRecaptureOne(String deduplicationType, LocalDate deduplicationDate) {
 
         var baselinePrints = biometricService.getFingerprints(2L);
         var recaptureTwoPrints = biometricService.getFingerprints(2L, deduplicationType);
@@ -88,7 +88,7 @@ public class NService {
         prepareForDeduplication(deduplicationType, baselinePrints, recaptureTwoPrints, 1,2);
 
         if (interventionEnabled) {
-            nInterventionService.doIntervention(deduplicationType, percentage, 0, 2);
+            nInterventionService.doIntervention(deduplicationType, percentage, 0, 2, Boolean.FALSE, deduplicationDate);
         }
 
     }
@@ -128,12 +128,12 @@ public class NService {
     }
     /*This method help you compare recaptu
     * */
-    public void recaptureThreeAndRecaptureTwo(String deduplicationType) {
+    public void recaptureThreeAndRecaptureTwo(String deduplicationType, LocalDate deduplicationDate) {
         var baselinePrints = biometricService.getFingerprints(3L);
         var recaptureThreePrints = biometricService.getFingerprints(3L, deduplicationType);
         prepareForDeduplication(deduplicationType, baselinePrints, recaptureThreePrints, 2,3);
         if (interventionEnabled) {
-            nInterventionService.doIntervention(deduplicationType, percentage, 0, 3);
+            nInterventionService.doIntervention(deduplicationType, percentage, 0, 3, Boolean.FALSE, deduplicationDate);
         }
     }
 

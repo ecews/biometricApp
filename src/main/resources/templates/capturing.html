@@ -23,7 +23,7 @@
           <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
         </li>
          <li class="nav-item">
-          <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+             <a class="nav-link text-white" href="import-export">Import /Export</a>
         </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
@@ -47,7 +47,7 @@
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.1
+              Version: 1.0.2
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
@@ -80,11 +80,14 @@
                <input id="search" aria-describedby="button-search" type="search" placeholder="Search using hospital number or unique id" class="form-control">
            </label>
            <div class="input-group-append col-1">
-               <button id="button-search" type="submit" class="btn btn-primary"> <i class="fa fa-search"> </i> </button>
+               <button id="button-search" type="submit" class="btn btn-outline-primary">Search</button>
            </div>
        </div>
-       <div id="searchResult">
+       <div class="row row text-center mt-5 m-auto">
+           <table class="table table-striped mt-3" id="searchResult"></table>
+           <div id="searchResultDetails">
 
+           </div>
        </div>
 
        <div id="displayLevel"></div>
@@ -198,15 +201,9 @@
                    type: "GET",
                    url: "/api/v1/biometric/patient?search=" + search,
                    success: function(response) {
-                       patient = response
-                       const holder = $('<div id="patientHolder" class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-1"></div>')
-                       const name = $('<div className="col p-1 border bg-dark"> Name:&nbsp; '+patient['surname'] +'&nbsp;' + patient['firstName']+'</div>');
-                       const gender = $('<div className="col p-1 border bg-dark"> Gender:&nbsp; '+patient['sex'] +'</div>');
-                       const dateOfBirth = $('<div className="col p-1 border bg-dark"> Date of Birth:&nbsp; '+patient['dateOfBirth'] +'</div>');
-                       const artStartDate = $('<div className="col p-1 border bg-dark"> ART Start Date:&nbsp; '+patient['dateStarted'] +'</div>');
-                       holder.append(name).append(gender).append(dateOfBirth).append(artStartDate)
-                       $('#searchResult').html(holder);
-                       getBackupLevel(patient['uuid']);
+                       document.getElementById("searchResult").style.display = "block";
+                       console.log("Response is ********* {}", response)
+                       createTable(response, 'searchResult')
 
                        document.getElementById("containerH").style.display = "block";
                        document.getElementById("capture").style.display = "block";
@@ -273,6 +270,62 @@
                }
            });
        }
+
+       function createTable(data, id) {
+           // Get the table element
+           var table = document.getElementById(id);
+
+           // Clear existing table rows
+           table.innerHTML = '';
+
+           // Create table header
+           var headerRow = table.insertRow();
+           var headers = Object.keys(data[0]);
+           headers.forEach(function(header) {
+               var th = document.createElement('th');
+               th.textContent = formatHeader(header);
+               headerRow.appendChild(th);
+           });
+           // Add an additional column for the action buttons
+           var actionHeader = document.createElement('th');
+           actionHeader.textContent = 'Action';
+           headerRow.appendChild(actionHeader);
+
+           // Create table rows
+           data.forEach(function(item) {
+               var row = table.insertRow();
+               headers.forEach(function(header) {
+                   var cell = row.insertCell();
+                   cell.textContent = item[header];
+               });
+
+               // Create action button
+               var actionCell = row.insertCell();
+               var button = document.createElement('button');
+               button.textContent = 'Set';
+               button.addEventListener('click', function() {
+                   // Perform action here
+                   patient = item
+                   const holder = $('<div id="patientHolder" class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-1"></div>')
+                   const name = $('<div className="col p-1 border bg-dark"> Name:&nbsp; '+patient['surname'] +'&nbsp;' + patient['firstName']+'</div>');
+                   const gender = $('<div className="col p-1 border bg-dark"> Gender:&nbsp; '+patient['sex'] +'</div>');
+                   const dateOfBirth = $('<div className="col p-1 border bg-dark"> Date of Birth:&nbsp; '+patient['dateOfBirth'] +'</div>');
+                   const artStartDate = $('<div className="col p-1 border bg-dark"> ART Start Date:&nbsp; '+patient['dateStarted'] +'</div>');
+                   holder.append(name).append(gender).append(dateOfBirth).append(artStartDate)
+                   $('#searchResultDetails').html(holder);
+                   document.getElementById("searchResultDetails").style.display = "block";
+                   document.getElementById("searchResult").style.display = "none";
+                   getBackupLevel(patient['uuid']);
+               });
+               actionCell.appendChild(button);
+           });
+       }
+
+       function formatHeader(header) {
+           return header.replace(/([A-Z])/g, ' $1')
+               .replace(/^./, function(str) { return str.toUpperCase(); });
+       }
+
    </script>
     
   </body>

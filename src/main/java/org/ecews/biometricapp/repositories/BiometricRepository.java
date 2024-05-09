@@ -1,6 +1,7 @@
 package org.ecews.biometricapp.repositories;
 
 import org.ecews.biometricapp.entities.Biometric;
+import org.ecews.biometricapp.repositories.projections.FingerCountProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface BiometricRepository extends JpaRepository<Biometric, String> {
@@ -61,12 +63,14 @@ public interface BiometricRepository extends JpaRepository<Biometric, String> {
 
     @Query(value = """
         select distinct person_uuid from identification_response ir
-            where deduplication_type = :deduplicationType
-            and jsonb_array_length(ir.matched_pairs) <= 2 or matched_pairs is null
+            where deduplication_type = :deduplicationType and date_of_deduplication = :dateOfDeduplication 
+            and jsonb_array_length(ir.matched_pairs) <= 3 or matched_pairs is null
         limit (select count(distinct person_uuid) * :percentage from identification_response
-                where deduplication_type = :deduplicationType and (jsonb_array_length(matched_pairs) <= 2 or matched_pairs is null))
+                where deduplication_type = :deduplicationType and (jsonb_array_length(matched_pairs) <= 3 or matched_pairs is null))
 """, nativeQuery = true)
-    Set<String> getClientForIntervention(@Param("deduplicationType") String deduplicationType, @Param("percentage") Double percentage);
+    Set<String> getClientForIntervention(@Param("deduplicationType") String deduplicationType,
+                                         @Param("percentage") Double percentage,
+                                         @Param("dateOfDeduplication") LocalDate dateOfDeduplication);
 
     @Query(value = """
         select * from biometric where archived = 0 and person_uuid in :clients and recapture in :recaptures and version_iso_20 = true
@@ -91,5 +95,20 @@ public interface BiometricRepository extends JpaRepository<Biometric, String> {
         select * from biometric where person_uuid = :personUuid and recapture in :recaptures and archived = 0 and version_iso_20 = true
 """, nativeQuery = true)
     List<Biometric> getPersonBiometrics(@Param("personUuid") String personUuid, @Param("recaptures") Set<Integer> recaptures);
+
+    @Query(value = """
+        select * from biometric where archived = 0 and person_uuid = :personUuid and template_type = :templateType and recapture = :recapture
+""", nativeQuery = true)
+    Optional<Biometric> getPersonRecaptureTemplate (@Param("personUuid") String personUuid, @Param("templateType") String templateType,
+                                                    @Param("recapture") Integer recapture);
+
+    @Query(value = """
+        select person_uuid, count(*) as finger_count from biometric 
+        where person_uuid in (select person_uuid from identification_response 
+        where date_of_deduplication = :dateOfDeduplication and deduplication_type = :deduplicationType) 
+        group by person_uuid;
+""", nativeQuery = true)
+    List<FingerCountProjection> getFingerCountForDate(@Param("dateOfDeduplication") LocalDate dateOfDeduplication,
+                                                      @Param("deduplicationType") String deduplicationType);
 
 }
