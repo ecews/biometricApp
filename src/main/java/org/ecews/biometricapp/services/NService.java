@@ -258,10 +258,6 @@ public class NService {
         var client = createNBiometricClient();
         var subjects = createSubjects(biometrics);
         var identifierSubjects = createSubjects(identifiers);
-        /*log.info("Person UUID ************ {}", personUuid);
-        log.info("Subject N size ************ {}", subjects.size());
-        log.info("Identifier real size ************ {}", identifiers.size());
-        log.info("Identifier N size ************ {}", identifierSubjects.size());*/
 
         NBiometricTask task = client.createTask(EnumSet.of(NBiometricOperation.ENROLL), null);
         performNTask(client, subjects, task);
