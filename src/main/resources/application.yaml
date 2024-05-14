@@ -6,11 +6,11 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/new_engwang
+    url: jdbc:postgresql://localhost:5432/new_infectious_disease_db
     username: postgres
     password: amos33
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
   application:

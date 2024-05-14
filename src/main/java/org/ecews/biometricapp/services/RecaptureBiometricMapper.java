@@ -114,8 +114,8 @@ public class RecaptureBiometricMapper {
         }
         RecaptureBiometricDTO metaData = biometricDTOList.get(0);
         LocalDate visitDate = metaData.getEnrollmentDate();
-        if (visitDate == null) {
-            log.error("Captured date can not be null patient uuid : " + patientUuid);
+        if (visitDate == null ||  visitDate.isAfter(LocalDate.now())) {
+            log.error("Captured date is not valid for with patient uuid  : {}" , patientUuid);
             return false;
         }
         try {
