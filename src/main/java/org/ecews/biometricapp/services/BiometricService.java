@@ -143,12 +143,16 @@ public class BiometricService {
                     // Handle invalid line
                     continue;
                 }
-                log.info("Parts ************************** {}", parts.length);
                 String person = parts[0].trim();
                 String encounterDateString = parts[1].trim();
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                LocalDate encounterDate = LocalDate.parse(encounterDateString, formatter);
+                LocalDate encounterDate = null;
+                try {
+                    encounterDate = LocalDate.parse(encounterDateString, formatter);
+                } catch (Exception e) {
+                    encounterDate = LocalDate.now();
+                }
                 log.info("String Date is ************************** {}", encounterDate);
 
                 int use = Integer.parseInt(parts[2].trim());

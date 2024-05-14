@@ -63,7 +63,6 @@ public class CreateTemplateService {
                     if(template.length > 24) {
                         template[25] = 0x00;
                         NFRecord record = nInterventionService.convertTemplateToNFRecord(template);
-
                         if(record != null) {
                             int size = record.getMinutiae().size();
                             assert biometric.getId() != null;
