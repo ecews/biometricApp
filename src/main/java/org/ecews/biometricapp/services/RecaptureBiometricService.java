@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,7 +59,7 @@ public class RecaptureBiometricService {
 
 	private final NDRCodeSetResolverService ndrCodeSetResolverService;
 	public static final String BASE_DIR = "runtime/ndr/transfer/";
-	public boolean generateRecaptureBiometrics(Long facilityId, Integer recaptureType) {
+	public boolean generateRecaptureBiometrics(Long facilityId, Integer recaptureType, Set<String> ids) {
 		String pathname = BASE_DIR + "temp/biorecapture/" + facilityId + "/";
 		cleanupFacility(facilityId, pathname);
 		AtomicInteger count = new AtomicInteger(0);
@@ -70,12 +71,37 @@ public class RecaptureBiometricService {
 			deduplicationType = DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE;
 		} else if (recaptureType == 3) {
 			deduplicationType = DeDuplicationConfigs.RECAPTURE_THREE_AND_TWO;
-		} else {
+		}
+		else if (recaptureType == 4) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_FOUR;
+		}
+		else if (recaptureType == 5) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_FIVE;
+		}
+		else if (recaptureType == 6) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_SIX;
+		}
+		else if (recaptureType == 7) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_SEVEN;
+		}
+		else if (recaptureType == 8) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_EIGHT;
+		}
+		else if (recaptureType == 9) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_NINE;
+		}
+		else if (recaptureType == 10) {
+			deduplicationType = DeDuplicationConfigs.RECAPTURE_TEN;
+		}
+		else {
 			throw new IllegalArgumentException("Invalid recaptureType: " + recaptureType);
 		}
-		Iterable<String> patientsIds =
-				nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType, deduplicationType.toString());
-
+		Iterable<String> patientsIds = null;
+		if (!ids.isEmpty()){
+			patientsIds = ids;
+		} else {
+			patientsIds = nDRCodeSetRepository.getRecapturedPatientIds(facilityId, recaptureType);
+		}
 		log.info("About {} patients are identified for generating NDR file", patientsIds.iterator().hasNext());
 		if (!patientsIds.iterator().hasNext()) {
 			return false;

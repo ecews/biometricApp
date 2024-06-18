@@ -60,7 +60,7 @@
 </nav>
 
    <div class="container text-center my-5">
-   		<h1>REPORTS GENERATOR</h1>
+   		<h1>OTHERS REPORTS GENERATOR</h1>
    		<h6> Please kindly select report leve and report type to enable generate a report
    		</h6>
 
@@ -83,32 +83,13 @@
            <form id="reportForm">
                <div class="mb-3">
                    <div class="col">
-                       <select id="reportLevel"  name="reportLevel" class="form-select form-select-lg mb-3" aria-label="Large select example">
-                           <option selected>Select Report Level</option>
-                           <option value="REPORT_LEVEL_SUMMARY">Summary</option>
-                           <option value="REPORT_LEVEL_DETAIL">Detailed</option>
-                       </select>
-                   </div>
-               </div>
-
-               <div class="mb-3">
-                   <div class="col">
                        <select id="reportType"  name="reportType" class="form-select form-select-lg mb-3" aria-label="Large select example">
-                           <option selected>Select Report Type</option>
-                           <option value="RECAPTURE_ONE_AND_BASELINE_REPORT">Recapture One Report</option>
-                           <option value="RECAPTURE_TWO_AND_ONE_REPORT">Recapture Two Report</option>
-                           <option value="RECAPTURE_THREE_AND_TWO_REPORT">Recapture Three Report</option>
-                           <option value="RECAPTURE_FOUR_REPORT">Recapture Four Report</option>
-                           <option value="RECAPTURE_FIVE_REPORT">Recapture Five Report</option>
-                           <option value="RECAPTURE_SIX_REPORT">Recapture Six Report</option>
-                           <option value="RECAPTURE_SEVEN_REPORT">Recapture Seven Report</option>
-                           <option value="RECAPTURE_EIGHT_REPORT">Recapture Eight Report</option>
-                           <option value="RECAPTURE_NINE_REPORT">Recapture Nine Report</option>
-                           <option value="RECAPTURE_TEN_REPORT">Recapture Ten Report</option>
+                           <option selected>Select Report</option>
+                           <option value="CURRENT_RECAPTURE">Current Recapture Count</option>
+                           <option value="BIOMETRIC_LONGITUDINAL_REPORT">Longitudinal Biometric Report</option>
                        </select>
                    </div>
                </div>
-
                <div class="mb-3">
                    <div class="col">
                        <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate Report</button>
@@ -127,17 +108,13 @@
        document.getElementById('submitButton').addEventListener('click', function() {
            document.getElementById("submitButton").disabled = true;
            document.getElementById("inProcess").style.display = "block";
-           const reportLevel = document.getElementById('reportLevel').value;
            const reportType = document.getElementById('reportType').value;
 
-           let filename = '';
-
-           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date.now() + '_SUMMARY.csv'
-           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date.now() + '_DETAIL.csv'
+           let filename = reportType + '.csv';
 
            // Send AJAX request to the backend
            const xhr = new XMLHttpRequest();
-           xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
+           xhr.open('GET', '/generate-reports-others?reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
                console.log("Response from server ******* ")
@@ -168,27 +145,13 @@
            xhr.send();
        });
 
-       function validateForm() {
-           var reportLevel = document.getElementById("reportLevel").value;
-           var reportType = document.getElementById("reportType").value;
-
-           if (reportLevel && reportType) {
-               return true;
-           } else {
-               alert("Please select both Report Level and Report Type.");
-               return false;
-           }
-       }
-
-       document.getElementById("reportLevel").addEventListener("change", toggleSubmitButton);
        document.getElementById("reportType").addEventListener("change", toggleSubmitButton);
 
        function toggleSubmitButton() {
-           var reportLevel = document.getElementById("reportLevel").value;
            var reportType = document.getElementById("reportType").value;
            var submitButton = document.getElementById("submitButton");
 
-           if ((reportLevel !== 'Select Report Level' && reportLevel) && (reportType !== 'Select Report Type' && reportType)) {
+           if ((reportType !== 'Select Report' && reportType)) {
                submitButton.disabled = false;
            } else {
                submitButton.disabled = true;

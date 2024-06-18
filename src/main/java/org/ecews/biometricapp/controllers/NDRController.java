@@ -25,4 +25,10 @@ public class NDRController {
         model.addAttribute("files", biometricService.getNdrStatus());
         return "download-xml";
     }
+
+    @GetMapping("/generate_xml_file")
+    public String generateFile(Model model) {
+        model.addAttribute("facilities", reportService.getDistinctFacilities());
+        return "generate-xml-file";
+    }
 }

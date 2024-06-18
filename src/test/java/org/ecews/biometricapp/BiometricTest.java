@@ -80,6 +80,23 @@ public class BiometricTest {
     }
 
     @Test
+    public void testGetAllBiometrics () {
+        String start = "2024-01-01";
+        String end = "2024-01-31";
+
+        var bios = biometricService.getAllBiometrics(1, LocalDate.parse(start), LocalDate.parse(end));
+        log.info("Biometric size = {}", bios.size());
+    }
+
+    @Test
+    public void getIdsForNDR(){
+        String start = "2024-01-01";
+        String end = "2024-01-31";
+        var bios = biometricService.getIdsForNDR(LocalDate.parse(start), LocalDate.parse(end));
+        log.info("Biometric size = {}", bios.size());
+    }
+
+    @Test
     public void testApplicationPV(){
         log.info("Enabled *************** {}", interventionEnabled);
         log.info("Deduplication *************** {}", interventionDeduplication);

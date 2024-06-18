@@ -107,12 +107,12 @@
                        </select>
                    </div>
                </div>
-               <!--<div class="mb-3 row">
+               <div class="mb-3 row">
                    <div class="col">
                        <input id="file" name="file" class="form-control form-control-lg" type="file">
                    </div>
-               </div>-->
-               <div class="mb-3 row">
+               </div>
+               <!--<div class="mb-3 row">
                    <div class="col">
                        <label><b>Start:</b></label>
                        <label for="start">
@@ -126,7 +126,7 @@
                        </label>
                    </div>
                </div>
-
+-->
                <div class="mb-3">
                    <div class="col">
                        <button id = "submitButton" type="button" class="btn btn-primary" disabled>Generate XML Files</button>
@@ -170,15 +170,31 @@
                const recaptureType = $("#recapture").val();// Replace with the actual recaptureType
                const start = $("#start").val(); // Replace with the actual facilityId
                const end = $("#end").val();
-
+               // Get the file input element
+               var fileInput = document.getElementById('file');
+               // Get the file object
+               // Create a FormData object
+               var formData = new FormData();
+               // Append the file to the FormData object
+               console.log("File is **** ", fileInput)
+               if (fileInput.files.length > 0) {
+                   var file = fileInput.files[0];
+                   formData.append('file', file);
+               }else {
+                   console.log("No file found ********* ")
+                   formData.append('file', null);
+               }
+               formData.append('start', start);
+               formData.append('end', end);
 
                document.getElementById("inProcess").style.display = "block";
                $('#submitButton').attr('disabled','disabled');
-               const url = "/api/v1/ndr/recapture/facility/" + facilityId + "/" + recaptureType + "?start=" + start + "&end=" + end
+               const url = "/api/v1/ndr/recapture/facility/" + facilityId + "/" + recaptureType +"/file"
                console.log(url);
 
                $.ajax({
-                   type: "GET",
+                   type: "POST",
+                   data: formData,
                    url: url,
                    processData: false, // Prevent jQuery from processing the data
                    contentType: false,

@@ -46,17 +46,20 @@ public class BiometricController {
     }
 
     @GetMapping("/run-deduplication")
-    public String runDeduplication(@RequestParam("deduplicationType") String deduplicationType, Model model) {
+    public String runDeduplication(
+            @RequestParam("deduplicationType") String deduplicationType,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            Model model
+    ) {
+        log.info("Start ****{} End ******* {}", startDate, endDate);
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
 
         switch (deduplicationType) {
             case DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE -> {
                 nService.recaptureOneAndBaseline(DeDuplicationConfigs.RECAPTURE_ONE_AND_BASELINE, LocalDate.now());
                 model.addAttribute("successMessage", "Done running recapture one baseline deduplication");
-                return "deduplication";
-            }
-            case DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK -> {
-                nService.recaptureOneDuplicateCheck(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK);
-                model.addAttribute("successMessage", "Done running recapture one duplicate check deduplication");
                 return "deduplication";
             }
             case DeDuplicationConfigs.RECAPTURE_TWO_AND_ONE -> {
@@ -69,6 +72,46 @@ public class BiometricController {
                 model.addAttribute("successMessage", "Done running recapture three and two deduplication");
                 return "deduplication";
             }
+            case DeDuplicationConfigs.RECAPTURE_FOUR -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_FOUR, LocalDate.now(), start, end, 4);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_FIVE -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_FIVE, LocalDate.now(), start, end, 5);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_SIX -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_SIX, LocalDate.now(), start, end, 6);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_SEVEN -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_SEVEN, LocalDate.now(), start, end, 7);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_EIGHT -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_EIGHT, LocalDate.now(), start, end, 8);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_NINE -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_NINE, LocalDate.now(), start, end, 9);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            case DeDuplicationConfigs.RECAPTURE_TEN -> {
+                nService.biometricDeduplication(DeDuplicationConfigs.RECAPTURE_TEN, LocalDate.now(), start, end, 10);
+                model.addAttribute("successMessage", "Done running recapture three and two deduplication");
+                return "deduplication";
+            }
+            /*case DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK -> {
+                nService.recaptureOneDuplicateCheck(DeDuplicationConfigs.RECAPTURE_ONE_DUPLICATE_CHECK);
+                model.addAttribute("successMessage", "Done running recapture one duplicate check deduplication");
+                return "deduplication";
+            }
             case DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK -> {
                 nService.recaptureTwoDuplicateCheck(DeDuplicationConfigs.RECAPTURE_TWO_DUPLICATE_CHECK);
                 model.addAttribute("successMessage", "Done running recapture two duplicate check");
@@ -78,12 +121,11 @@ public class BiometricController {
                 nService.recaptureThreeDuplicateCheck(DeDuplicationConfigs.RECAPTURE_THREE_DUPLICATE_CHECK);
                 model.addAttribute("successMessage", "Done running recapture three duplicate check");
                 return "deduplication";
-            }
+            }*/
             default -> {
                 model.addAttribute("errorMessage", "No deduplication type selected");
                 return "deduplication";
             }
         }
-
     }
 }

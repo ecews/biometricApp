@@ -27,8 +27,12 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
           </li>
-          <li class="nav-item">
-              <a class="nav-link text-white" href="reports">Reports</a>
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Reports</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="reports">Deduplication Report</a></li>
+                  <li><a class="dropdown-item" href="reports-others">Other Reports</a></li>
+              </ul>
           </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="capturing">Capture Biometric</a>
@@ -40,13 +44,14 @@
               <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
               <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="generate_xml_file">Generate XML with a file</a></li>
                   <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
               </ul>
           </li>
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.3
+              Version: 1.0.5
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>

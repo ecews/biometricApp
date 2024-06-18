@@ -81,9 +81,9 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
                select distinct b.person_uuid from biometric b
                          where b.facility_id = ?1
                          and b.recapture = ?2
-                         and b.archived = 0 and enrollment_date between '2023-10-31'<= current_date
+                         and b.archived = 0 and enrollment_date <= current_date
                    """, nativeQuery = true)
-   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType, String deduplicationType);
+   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
    
    @Query(value = "select person_uuid from hiv_art_pharmacy \n" +
            "where last_modified_date > ?1\n" +

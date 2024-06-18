@@ -49,6 +49,10 @@ public class BiometricService {
     public List<Biometric> getPersonBiometrics(String personUuid, Set<Integer> recaptures) {
         return biometricRepository.getPersonBiometrics(personUuid, recaptures);
     }
+
+    public Set<String> getIdsForNDR(LocalDate start, LocalDate end) {
+        return biometricRepository.getIdsForNDR(start, end);
+    }
     public List<Biometric> getInterventionPrintsForDeduplication (LocalDate backupDate, Set<Integer> recaptures, String deduplicationType){
         return biometricRepository.getInterventionPrintsForDeduplication(backupDate, recaptures, deduplicationType);
     }
@@ -79,6 +83,10 @@ public class BiometricService {
 
     public List<Biometric> getMatchedFingerprints(Long recapture, String deduplicationType){
         return biometricRepository.getMatchedFingerprints(recapture, deduplicationType);
+    }
+
+    public List<Biometric> getAllBiometrics(Integer recapture, LocalDate start, LocalDate end){
+        return biometricRepository.getAllBiometrics(recapture, start, end);
     }
 
     public List<Biometric> filterBiometricByRecapture (List<Biometric> biometrics, Integer recapture) {
@@ -127,6 +135,54 @@ public class BiometricService {
     }
 
     @SneakyThrows
+    public List<RecreateTemplateDTO> readDTOsFromExcelFile(MultipartFile file) throws Exception {
+        var dtos = new ArrayList<RecreateTemplateDTO>();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String line;
+            boolean skipFirstLine = true;
+            while ((line = reader.readLine()) != null) {
+                if (skipFirstLine) {
+                    skipFirstLine = false; // Set the flag to false after skipping the first line
+                    continue; // Skip the first line
+                }
+                String[] parts = line.split(",");
+                if (parts.length < 4) {
+                    // Handle invalid line
+                    continue;
+                }
+                String person = parts[0].trim();
+                String encounterDateString = parts[1].trim();
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate encounterDate = null;
+                try {
+                    encounterDate = LocalDate.parse(encounterDateString, formatter);
+
+                } catch (Exception e) {
+                    log.error("Error converting to date format **** {}", e.getMessage());
+                    encounterDate = LocalDate.now();
+                }
+                log.info("String Date is ************************** {}", encounterDate);
+
+                int use = Integer.parseInt(parts[2].trim());
+                int create = Integer.parseInt(parts[3].trim());
+
+                RecreateTemplateDTO dto = new RecreateTemplateDTO();
+                dto.setPersonUuid(person);
+                dto.setDateOfEnrollment(encounterDate);
+                dto.setUse(use);
+                dto.setCreate(create);
+
+                dtos.add(dto);
+            }
+        }
+        log.error("Length of DTO ******* {}", dtos.size());
+
+        return dtos;
+    }
+
+    @SneakyThrows
     public List<RecreateTemplateDTO> readDTOsFromFile(MultipartFile file) throws Exception {
         List<RecreateTemplateDTO> dtos = new ArrayList<>();
 
@@ -151,7 +207,8 @@ public class BiometricService {
                 try {
                     encounterDate = LocalDate.parse(encounterDateString, formatter);
                 } catch (Exception e) {
-                    encounterDate = LocalDate.now();
+
+                    // encounterDate = LocalDate.now();
                 }
                 log.info("String Date is ************************** {}", encounterDate);
 

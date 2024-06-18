@@ -2,6 +2,24 @@ package org.ecews.biometricapp.repositories.queries;
 
 public class SetupQueries {
     public static final String CLEAN_BIOMETRIC_RECORD = """
+            
+            ALTER TABLE biometric ADD COLUMN temp_id SERIAL;
+            WITH duplicates AS (
+                SELECT
+                    temp_id,
+                    ROW_NUMBER() OVER (PARTITION BY id ORDER BY temp_id) AS row_num
+                FROM
+                    biometric
+            )
+            DELETE FROM biometric
+            WHERE
+                temp_id IN (
+                    SELECT temp_id
+                    FROM duplicates
+                    WHERE row_num > 1
+                );
+            ALTER TABLE biometric DROP COLUMN temp_id;
+            
             update biometric set template_type = 'Left Thumb Finger' where template_type = 'Left Thumb';
             update biometric set template_type = 'Right Thumb Finger' where template_type = 'Right Thumb';
             update biometric set template_type = 'Right Little Finger' where template_type = 'Right LIttle Finger';

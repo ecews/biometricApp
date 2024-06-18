@@ -22,5 +22,10 @@ public class ReportController {
         return "reports";
     }
 
+    @GetMapping("/reports-others")
+    public String reportsOthers() {
+        return "reports-others";
+    }
+
 
 }

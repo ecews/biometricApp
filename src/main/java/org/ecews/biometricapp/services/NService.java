@@ -58,6 +58,18 @@ public class NService {
         this.interventionResponseService = interventionResponseService;
     }
 
+    public void biometricDeduplication(String deduplicationType, LocalDate deduplicationDate, LocalDate start, LocalDate end, Integer recapture) {
+        // Getting all baseline prints
+        log.info("Biometric deduplication ************ {}", recapture);
+        var baselinePrints = biometricService.getAllBiometrics(recapture, start, end);
+        prepareForDeduplication(deduplicationType, baselinePrints, null, recapture - 1, recapture);
+        // Doing intervention after deduplication
+        if (interventionEnabled) {
+            nInterventionService.doIntervention(deduplicationType, percentage, 0, recapture, Boolean.FALSE, deduplicationDate);
+        }
+
+    }
+
     public void recaptureOneAndBaseline(String deduplicationType, LocalDate deduplicationDate) {
         // Getting all baseline prints
         var baselinePrints = biometricService.getFingerprints(1L);
@@ -86,7 +98,6 @@ public class NService {
         var recaptureTwoPrints = biometricService.getFingerprints(2L, deduplicationType);
 
         prepareForDeduplication(deduplicationType, baselinePrints, recaptureTwoPrints, 1,2);
-
         if (interventionEnabled) {
             nInterventionService.doIntervention(deduplicationType, percentage, 0, 2, Boolean.FALSE, deduplicationDate);
         }
@@ -96,23 +107,32 @@ public class NService {
                                       Integer base, Integer recapture) {
         biometrics.entrySet().stream().parallel()
                 .forEach(value -> {
-                    var patientBaselinePrints = value.getValue().stream().filter(f -> f.getRecapture() <= base).toList();
-                    var patientRecaptureOnePrints = value.getValue().stream().filter(f -> Objects.equals(f.getRecapture(), recapture)).toList();
-                    doIdentification(patientBaselinePrints, patientRecaptureOnePrints, value.getKey(), deduplicationType);
+                    var subjects = value.getValue().stream().filter(f -> f.getRecapture() <= base).toList();
+                    var identifiers = value.getValue().stream().filter(f -> Objects.equals(f.getRecapture(), recapture)).toList();
+                    doIdentification(subjects, identifiers, value.getKey(), deduplicationType);
                 });
     }
 
-    private void prepareForDeduplication(String deduplicationType, List<Biometric> baselinePrints, List<Biometric> recaptureTwoPrints,
-                                         Integer base, Integer recapture) {
-        var recapturePersonsUuids = recaptureTwoPrints.stream()
-                .map(Biometric::getPersonUuid)
-                .toList();
-        baselinePrints = baselinePrints.stream()
-                .filter(biometric -> recapturePersonsUuids.contains(biometric.getPersonUuid()))
-                .toList();
-        var groupedBiometrics = baselinePrints.stream()
-                .collect(Collectors.groupingBy(Biometric::getPersonUuid));
-        callForDeduplication(deduplicationType, groupedBiometrics, base, recapture);
+    private void prepareForDeduplication(
+            String deduplicationType, List<Biometric> allPrints,
+            List<Biometric> recaptureTypePrints,
+            Integer base, Integer recapture
+    ) {
+        if (recaptureTypePrints != null) {
+            var recapturePersonsUuids = recaptureTypePrints.stream()
+                    .map(Biometric::getPersonUuid)
+                    .toList();
+            allPrints = allPrints.stream()
+                    .filter(biometric -> recapturePersonsUuids.contains(biometric.getPersonUuid()))
+                    .toList();
+            var groupedBiometrics = allPrints.stream()
+                    .collect(Collectors.groupingBy(Biometric::getPersonUuid));
+            callForDeduplication(deduplicationType, groupedBiometrics, base, recapture);
+        } else {
+            var groupedBiometrics = allPrints.stream()
+                    .collect(Collectors.groupingBy(Biometric::getPersonUuid));
+            callForDeduplication(deduplicationType, groupedBiometrics, base, recapture);
+        }
     }
 
     public void recaptureTwoDuplicateCheck(String deduplicationType){
@@ -331,7 +351,7 @@ public class NService {
     public NBiometricClient createNBiometricClient() {
         NBiometricClient client = null;
         client = new NBiometricClient();
-        client.setMatchingThreshold(144);
+        client.setMatchingThreshold(96);
         client.setFingersMatchingSpeed(NMatchingSpeed.LOW);
         client.setMatchingWithDetails(true);
         client.setMatchingMaximalResultCount(100);

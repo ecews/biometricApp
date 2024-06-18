@@ -7,10 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface BiometricRepository extends JpaRepository<Biometric, String> {
 
@@ -110,5 +107,17 @@ public interface BiometricRepository extends JpaRepository<Biometric, String> {
 """, nativeQuery = true)
     List<FingerCountProjection> getFingerCountForDate(@Param("dateOfDeduplication") LocalDate dateOfDeduplication,
                                                       @Param("deduplicationType") String deduplicationType);
+
+    @Query(value = """
+        select bb.* from biometric bb
+        join (select distinct person_uuid from biometric where recapture = :recapture and (enrollment_date between :start and :end )and archived = 0 and version_iso_20 = true) ed
+        on ed.person_uuid = bb.person_uuid;
+    """, nativeQuery = true)
+    List<Biometric> getAllBiometrics(@Param("recapture") Integer recapture, @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query(value = """
+        select distinct person_uuid from biometric where enrollment_date between :start and :end and archived = 0 and version_iso_20 = true 
+    """, nativeQuery = true)
+    Set<String> getIdsForNDR(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
 }

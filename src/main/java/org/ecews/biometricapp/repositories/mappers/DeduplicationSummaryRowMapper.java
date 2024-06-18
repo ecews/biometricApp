@@ -37,6 +37,14 @@ public class DeduplicationSummaryRowMapper implements RowMapper<DeduplicationSum
         obj.setBaselineCount(rs.getInt("baseline"));
         obj.setRecaptureOneCount(rs.getInt("recapture_1"));
         obj.setRecaptureTwoCount(rs.getInt("recapture_2"));
+        obj.setRecaptureThreeCount(rs.getInt("recapture_3"));
+        obj.setRecaptureFourCount(rs.getInt("recapture_4"));
+        obj.setRecaptureFiveCount(rs.getInt("recapture_5"));
+        obj.setRecaptureSixCount(rs.getInt("recapture_6"));
+        obj.setRecaptureSevenCount(rs.getInt("recapture_7"));
+        obj.setRecaptureEightCount(rs.getInt("recapture_8"));
+        obj.setRecaptureNineCount(rs.getInt("recapture_9"));
+
         return obj;
     }
 }

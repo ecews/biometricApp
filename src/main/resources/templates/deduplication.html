@@ -27,8 +27,12 @@
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
           </li>
-          <li class="nav-item">
-              <a class="nav-link text-white" href="reports">Reports</a>
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Reports</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="reports">Deduplication Report</a></li>
+                  <li><a class="dropdown-item" href="reports-others">Other Reports</a></li>
+              </ul>
           </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="capturing">Capture Biometric</a>
@@ -40,13 +44,14 @@
               <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
               <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="generate_xml_file">Generate XML with a file</a></li>
                   <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
               </ul>
           </li>
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.3
+              Version: 1.0.5
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
@@ -77,16 +82,37 @@
        <div class="row row text-center mt-5 w-50 m-auto">
            <form method="get" th:action="@{/run-deduplication}" class="mt-5 row align-items-center">
                <div class="mb-3">
+                   <div class="col mb-3 row">
+                       <div class="col">
+                           <label><b>Start:</b></label>
+                           <label for="start">
+                               <input name="startDate" style="width: 100%" id="start" placeholder="Start" type="date">
+                           </label>
+                       </div>
+                       <div class="col">
+                           <label><b>End:</b></label>
+                           <label for="end">
+                               <input name="endDate" style="width: 100%" id="end" placeholder="End" type="date">
+                           </label>
+                       </div>
+                   </div>
                    <div class="col">
                        <select name="deduplicationType" class="form-select form-select-lg mb-3" aria-label="Large select example">
                            <option selected>Choose Deduplication Type</option>
 
-                           <option value="RECAPTURE_ONE_AND_BASELINE">Recapture One and Baseline</option>
-                           <option value="RECAPTURE_TWO_AND_ONE">Recapture Two and One</option>
-                           <option value="RECAPTURE_THREE_AND_TWO">Recapture Three and Two</option>
-                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
+                           <option value="RECAPTURE_ONE_AND_BASELINE">Recapture One</option>
+                           <option value="RECAPTURE_TWO_AND_ONE">Recapture Two</option>
+                           <option value="RECAPTURE_THREE_AND_TWO">Recapture Three</option>
+                           <option value="RECAPTURE_FOUR">Recapture Four</option>
+                           <option value="RECAPTURE_FIVE">Recapture Five</option>
+                           <option value="RECAPTURE_SIX">Recapture Six</option>
+                           <option value="RECAPTURE_SEVEN">Recapture Seven</option>
+                           <option value="RECAPTURE_EIGHT">Recapture Eight</option>
+                           <option value="RECAPTURE_NINE">Recapture Nine</option>
+                           <option value="RECAPTURE_TEN">Recapture Ten</option>
+                           <!--<option value="RECAPTURE_ONE_DUPLICATE_CHECK">Recapture One Duplicate Check</option>
                            <option value="RECAPTURE_TWO_DUPLICATE_CHECK">Recapture Two Duplicate Check</option>
-                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK">Recapture Three Duplicate Check</option>
+                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK">Recapture Three Duplicate Check</option>-->
                        </select>
                    </div>
                </div>

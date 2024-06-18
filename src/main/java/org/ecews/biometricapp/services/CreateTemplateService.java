@@ -48,7 +48,7 @@ public class CreateTemplateService {
             biometrics.forEach(b -> {
                 Optional<Biometric> personBiometric = biometricService.getPersonRecaptureTemplate(recreateTemplateDTO.getPersonUuid(), b.getTemplateType(), recreateTemplateDTO.getCreate());
                 personBiometric.ifPresentOrElse(pb -> {
-                    log.info("Template {} for {} already exist with recapture count {}", b.getTemplateType(), recreateTemplateDTO.getPersonUuid(), recreateTemplateDTO.getCreate());
+                    // log.info("Template {} for {} already exist with recapture count {}", b.getTemplateType(), recreateTemplateDTO.getPersonUuid(), recreateTemplateDTO.getCreate());
                 }, () -> {
                     Biometric biometric = new Biometric();
                     BeanUtils.copyProperties(b, biometric);
@@ -58,7 +58,7 @@ public class CreateTemplateService {
                     biometric.setRecapture(recreateTemplateDTO.getCreate());
                     // Create a new print from the older one
                     byte[] template = biometric.getTemplate();
-                    log.info("Template length ******* {}", template.length);
+                    // log.info("Template length ******* {}", template.length);
 
                     if(template.length > 24) {
                         template[25] = 0x00;
@@ -108,7 +108,7 @@ public class CreateTemplateService {
 
             });
         }else {
-            log.error("Patient has less than six baseline fingerprints ");
+            log.error("Patient has less than six for this fingerprints set ");
         }
         log.info("Out of loop, done ****** ");
 
