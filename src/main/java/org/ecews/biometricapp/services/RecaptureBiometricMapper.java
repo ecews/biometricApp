@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.ecews.biometricapp.entities.NdrMessageLog;
-import org.ecews.biometricapp.entities.dtos.PatientDemographics;
+import org.ecews.biometricapp.entities.dtos.PatientDemographicDTO;
 import org.ecews.biometricapp.entities.dtos.RecaptureBiometricDTO;
 import org.ecews.biometricapp.recapture.*;
 import org.ecews.biometricapp.repositories.NDRCodeSetRepository;
@@ -25,19 +25,19 @@ public class RecaptureBiometricMapper {
     private final NdrMessageLogRepository ndrMessageLogRepository;
     private final NDRCodeSetRepository ndrCodeSetRepository;
 
-    public Container getRecaptureBiometricMapper(PatientDemographics demographics, Integer recaptureType) {
+    public Container getRecaptureBiometricMapper(PatientDemographicDTO demographics, Integer recaptureType) {
         log.info("Start fetching and mapping finger-print for patient with hospital number {}", demographics.getHospitalNumber());
         ObjectFactory objectFactory = new ObjectFactory();
 
         MessageSendingOrganisationType messageSendingOrganisationType =
                 getMessageSendingOrganisationType(objectFactory.createMessageSendingOrganisationType(),
-                        demographics.getFacilityName(), demographics.getDatimId());
+                        demographics.getFacilityName(), demographics.getFacilityId());
 
         MessageHeaderType messageHeaderType =
                 getMessageHeaderType(objectFactory.createMessageHeaderType(), messageSendingOrganisationType);
 
         PatientDemographicsType patientDemographicsType = objectFactory.createPatientDemographicsType();
-        patientDemographicsType.setPatientIdentifier(demographics.getDatimId().concat("_").concat(demographics.getPersonUuid()));
+        patientDemographicsType.setPatientIdentifier(demographics.getFacilityId().concat("_").concat(demographics.getPersonUuid()));
         boolean fingerPrintsAdded =
                 addFingerPrintType(objectFactory, demographics.getPersonUuid(), patientDemographicsType, recaptureType);
         if (fingerPrintsAdded) {
@@ -88,7 +88,7 @@ public class RecaptureBiometricMapper {
         Optional<NdrMessageLog> messageLog =
                 ndrMessageLogRepository.findFirstByIdentifierAndFileType(patientIdentifier, "recaptured-biometric");
         List<RecaptureBiometricDTO> biometricDTOList = new ArrayList<>();
-        if (messageLog.isPresent() && messageLog.get().getFile().contains(String.valueOf(recaptureType))) {
+        if (messageLog.isPresent() && messageLog.get().getFile().contains("xml_" + recaptureType)) {
             // find the new value;
             LocalDate lastUpdated =
                     messageLog.get().getLastUpdated().toLocalDate();
@@ -96,14 +96,14 @@ public class RecaptureBiometricMapper {
             log.info("file {}", messageLog.get().getFile());
             log.info("recaptureType " + recaptureType);
             biometricDTOList =
-                    ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType, lastUpdated);
+                    ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType);
 
 
         } else {
             biometricDTOList =
                     ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType);
         }
-
+        log.info("Biometric size is ***** {} identifier ****** {}", biometricDTOList.size(), patientIdentifier);
         if (biometricDTOList.isEmpty()) {
             log.info("No biometric recapture found for the patient with uuid " + patientUuid);
             return false;
@@ -114,8 +114,8 @@ public class RecaptureBiometricMapper {
         }
         RecaptureBiometricDTO metaData = biometricDTOList.get(0);
         LocalDate visitDate = metaData.getEnrollmentDate();
-        if (visitDate == null) {
-            log.error("Captured date can not be null patient uuid : " + patientUuid);
+        if (visitDate == null ||  visitDate.isAfter(LocalDate.now())) {
+            log.error("Captured date is not valid for with patient uuid  : {}" , patientUuid);
             return false;
         }
         try {

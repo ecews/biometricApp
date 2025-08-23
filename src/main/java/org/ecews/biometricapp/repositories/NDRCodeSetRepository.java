@@ -38,23 +38,28 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
             "hashed as templateTypeHash\n" +
             "FROM biometric where person_uuid = ?1 \n" +
             "AND biometric_type = 'FINGERPRINT' and archived = 0\n" +
-            "AND recapture > ?2\n" +
+            "AND recapture = ?2\n" +
             "AND version_iso_20 = true  and iso = true\n" +
             "AND enrollment_date >= ?3 \n" +
             "ORDER BY enrollment_date DESC LIMIT 10;", nativeQuery = true)
     List<RecaptureBiometricDTO> getPatientRecapturedBiometricByPatientUuid(String patientUuid, Integer recapture, LocalDate previousUploadDate);
     
-    @Query(value = "SELECT template_type as templateType, \n" +
-            "enrollment_date as enrollmentDate,\n" +
-            "recapture as count,\n" +
-            "template,\n" +
-            "image_quality as quality,\n" +
-            "hashed as templateTypeHash\n" +
-            "FROM biometric where person_uuid = ?1 \n" +
-            "AND biometric_type = 'FINGERPRINT' and archived = 0\n" +
-            "AND recapture = ?2 \n" +
-            "AND version_iso_20 = true  and iso = true\n" +
-            "ORDER BY enrollment_date DESC LIMIT 10 ", nativeQuery = true)
+    @Query(value =
+            """
+                    select * from (SELECT template_type as templateType,
+                                     enrollment_date as enrollmentDate,
+                                     recapture as count,
+                                     template,
+                                     image_quality as quality,
+                                     hashed as templateTypeHash,
+                                     ROW_NUMBER() OVER (PARTITION BY person_uuid, template_type ORDER BY enrollment_date DESC) AS rank
+                                     FROM biometric where person_uuid = ?1
+                                     AND biometric_type = 'FINGERPRINT' and archived = 0
+                                     AND recapture = ?2
+                                     AND version_iso_20 = true  and iso = true) b where b.rank = 1
+                            AND templateType not in ('Left Thumb', 'Right Thumb', 'Left Index', 'Right Index', 'Left Little', 'Right Little',
+                            						'Left Middle', 'Right Middle', 'Left Ring', 'Right Ring')
+                              """, nativeQuery = true)
     List<RecaptureBiometricDTO> getPatientRecapturedBiometricByPatientUuid(String patientUuid, Integer recapture);
     
    
@@ -70,15 +75,15 @@ public interface NDRCodeSetRepository extends JpaRepository<NDRCodeSet, String> 
            "AND arc.archived = 0 "+
            "AND  arc.person_uuid = ?1 ORDER BY arc.visit_date DESC LIMIT 1", nativeQuery = true)
    Optional<ArtCommencementDTO> getArtCommencementByPatientUuid(String patientUuid);
-   
+   // -- and i.deduplication_type= ?3 and i.identifier_count != 0 -- and jsonb_array_length(i.matched_pairs) >= 0
    @Query(value =
            """ 
-           select distinct person_uuid  from biometric
-                      where facility_id = ?1 
-                      and recapture = ?2 
-                      and archived = 0
+               select distinct b.person_uuid from biometric b
+                         where b.facility_id = ?1
+                         and b.recapture = ?2
+                         and b.archived = 0 and enrollment_date <= current_date
                    """, nativeQuery = true)
-   List<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
+   Iterable<String> getRecapturedPatientIds(Long facilityId, Integer recaptureType);
    
    @Query(value = "select person_uuid from hiv_art_pharmacy \n" +
            "where last_modified_date > ?1\n" +

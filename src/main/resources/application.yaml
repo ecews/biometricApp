@@ -6,15 +6,21 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/ewang
+    url: jdbc:postgresql://localhost:5432/ojoja_catholic
     username: postgres
-    password: amos33
+    password: ecews@2023
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
   application:
     name: biometricApp
+  threads:
+    virtual:
+      enabled: true
 server:
   port: 7071
+intervention:
+  enabled: false
+  deduplication: true
+percentage: 0.8

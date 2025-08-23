@@ -10,10 +10,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HandledResponse {
-    Integer matchCount = 0;
-    Integer noMatchCount = 0;
-    Integer subjectCount = 0;
-    Integer identifierCount = 0;
     List<MatchedPair> matchedPairs;
-
 }

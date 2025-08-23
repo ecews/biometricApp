@@ -22,28 +22,36 @@
           <a class="nav-link active text-white" aria-current="page" href="/">Home</a>
         </li>
           <li class="nav-item">
-              <a class="nav-link text-white" href="recapture-status">Recapture Status</a>
+              <a class="nav-link text-white" href="import-export">Import /Export</a>
           </li>
           <li class="nav-item">
               <a class="nav-link text-white" href="deduplication">Deduplication</a>
           </li>
+          <li class="nav-item dropdown">
+              <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Reports</a>
+              <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="reports">Deduplication Report</a></li>
+                  <li><a class="dropdown-item" href="reports-others">Other Reports</a></li>
+              </ul>
+          </li>
           <li class="nav-item">
-              <a class="nav-link text-white" href="reports">Reports</a>
+              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
           </li>
           <!--<li class="nav-item">
-              <a class="nav-link text-white" href="capturing">Capture Biometric</a>
+              <a class="nav-link text-white" href="replacement">Replacement</a>
           </li>-->
           <li class="nav-item dropdown">
               <a class="nav-link  dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">NDR</a>
               <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="generate_xml">Generate XML</a></li>
+                  <li><a class="dropdown-item" href="generate_xml_file">Generate XML with a file</a></li>
                   <li><a class="dropdown-item" href="download_xml">Download XML</a></li>
               </ul>
           </li>
       </ul>
       <div>
           <span class="navbar-text text-white">
-              Version: 1.0.0
+              Version: 1.0.5
           </span>
       		 <!--<a class="nav-link text-white" href="book_register">New Book Register</a>-->
       </div>
@@ -87,14 +95,16 @@
                    <div class="col">
                        <select id="reportType"  name="reportType" class="form-select form-select-lg mb-3" aria-label="Large select example">
                            <option selected>Select Report Type</option>
-                           <option value="RECAPTURE_ONE_AND_BASELINE_REPORT">Recapture One and Baseline Report</option>
-                           <option value="RECAPTURE_ONE_DUPLICATE_CHECK_REPORT">Recapture One Duplicate Check Report</option>
-
-                           <option value="RECAPTURE_TWO_AND_ONE_REPORT">Recapture Two and One Report</option>
-                           <option value="RECAPTURE_TWO_DUPLICATE_CHECK_REPORT">Recapture Two Duplicate Check Report</option>
-
-                           <option value="RECAPTURE_THREE_AND_TWO_REPORT">Recapture Three and Two Report</option>
-                           <option value="RECAPTURE_THREE_DUPLICATE_CHECK_REPORT">Recapture Three Duplicate Check Report</option>
+                           <option value="RECAPTURE_ONE_AND_BASELINE_REPORT">Recapture One Report</option>
+                           <option value="RECAPTURE_TWO_AND_ONE_REPORT">Recapture Two Report</option>
+                           <option value="RECAPTURE_THREE_AND_TWO_REPORT">Recapture Three Report</option>
+                           <option value="RECAPTURE_FOUR_REPORT">Recapture Four Report</option>
+                           <option value="RECAPTURE_FIVE_REPORT">Recapture Five Report</option>
+                           <option value="RECAPTURE_SIX_REPORT">Recapture Six Report</option>
+                           <option value="RECAPTURE_SEVEN_REPORT">Recapture Seven Report</option>
+                           <option value="RECAPTURE_EIGHT_REPORT">Recapture Eight Report</option>
+                           <option value="RECAPTURE_NINE_REPORT">Recapture Nine Report</option>
+                           <option value="RECAPTURE_TEN_REPORT">Recapture Ten Report</option>
                        </select>
                    </div>
                </div>
@@ -115,33 +125,36 @@
        });
 
        document.getElementById('submitButton').addEventListener('click', function() {
+           document.getElementById("submitButton").disabled = true;
            document.getElementById("inProcess").style.display = "block";
-           var reportLevel = document.getElementById('reportLevel').value;
-           var reportType = document.getElementById('reportType').value;
+           const reportLevel = document.getElementById('reportLevel').value;
+           const reportType = document.getElementById('reportType').value;
 
            let filename = '';
 
-           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date() + '_SUMMARY.csv'
-           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date() + '_DETAIL.csv'
+           if (reportLevel === 'REPORT_LEVEL_SUMMARY') filename = reportType + '_' + Date.now() + '_SUMMARY.csv'
+           if (reportLevel === 'REPORT_LEVEL_DETAIL') filename = reportType + '_' + Date.now() + '_DETAIL.csv'
 
            // Send AJAX request to the backend
-           var xhr = new XMLHttpRequest();
+           const xhr = new XMLHttpRequest();
            xhr.open('GET', '/generate-reports?reportLevel=' + reportLevel + '&reportType=' + reportType);
            xhr.responseType = 'blob'; // Set response type to blob
            xhr.onload = function() {
+               console.log("Response from server ******* ")
+               document.getElementById("submitButton").enabled = true;
                if (xhr.status === 200) {
                    document.getElementById("inProcess").style.display = "none";
                    // Create a blob URL from the response
-                   var blob = new Blob([xhr.response], { type: 'application/octet-stream' });
-                   var url = URL.createObjectURL(blob);
+                   const blob = new Blob([xhr.response], {type: 'application/octet-stream'});
+                   const url = URL.createObjectURL(blob);
                    // Create a link element and trigger the download
-                   var a = document.createElement('a');
+                   const a = document.createElement('a');
                    a.href = url;
                    a.download = filename; // Set desired file name
                    document.body.appendChild(a);
                    a.click();
                    document.body.removeChild(a);
-                   document.getElementById("reportSuccess").style.display = "block";
+                   // document.getElementById("reportSuccess").style.display = "block";
                    URL.revokeObjectURL(url);
                } else {
                    // Handle error
