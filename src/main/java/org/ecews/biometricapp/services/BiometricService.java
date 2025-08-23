@@ -190,17 +190,17 @@ public class BiometricService {
             String line;
             boolean skipFirstLine = true;
             while ((line = reader.readLine()) != null) {
-                if (skipFirstLine) {
+                if(skipFirstLine) {
                     skipFirstLine = false; // Set the flag to false after skipping the first line
                     continue; // Skip the first line
                 }
                 String[] parts = line.split(",");
                 if (parts.length < 4) {
-                    // Handle invalid line
                     continue;
                 }
                 String person = parts[0].trim();
                 String encounterDateString = parts[1].trim();
+                log.info("String Date from CSV is ************************** {}", encounterDateString);
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 LocalDate encounterDate = null;
@@ -210,7 +210,7 @@ public class BiometricService {
 
                     // encounterDate = LocalDate.now();
                 }
-                log.info("String Date is ************************** {}", encounterDate);
+                log.info("Converted Local Date is ************************** {}", encounterDate);
 
                 int use = Integer.parseInt(parts[2].trim());
                 int create = Integer.parseInt(parts[3].trim());

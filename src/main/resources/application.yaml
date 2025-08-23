@@ -6,7 +6,7 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/idh_calabar
+    url: jdbc:postgresql://localhost:5432/ojoja_catholic
     username: postgres
     password: ecews@2023
   jpa:

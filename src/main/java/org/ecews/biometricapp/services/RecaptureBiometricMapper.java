@@ -96,14 +96,14 @@ public class RecaptureBiometricMapper {
             log.info("file {}", messageLog.get().getFile());
             log.info("recaptureType " + recaptureType);
             biometricDTOList =
-                    ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType, lastUpdated);
+                    ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType);
 
 
         } else {
             biometricDTOList =
                     ndrCodeSetRepository.getPatientRecapturedBiometricByPatientUuid(patientUuid, recaptureType);
         }
-
+        log.info("Biometric size is ***** {} identifier ****** {}", biometricDTOList.size(), patientIdentifier);
         if (biometricDTOList.isEmpty()) {
             log.info("No biometric recapture found for the patient with uuid " + patientUuid);
             return false;

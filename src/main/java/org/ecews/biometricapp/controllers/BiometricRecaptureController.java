@@ -57,7 +57,7 @@ public class BiometricRecaptureController {
 				){
 		Set<String> ids = new HashSet<>();
 		var dtos = service.readDTOsFromFile(file);
-		ids =  dtos.stream().map(RecreateTemplateDTO::getPersonUuid).collect(Collectors.toSet());
+		ids =  dtos.stream().map(RecreateTemplateDTO::getPersonUuid).map(String::trim).collect(Collectors.toSet());
 		log.info("File **** {} ******* ", file);
 		List<Boolean> result = new ArrayList<>();
 		boolean result1 = biometricService.generateRecaptureBiometrics(facilityId, recaptureType, ids);
